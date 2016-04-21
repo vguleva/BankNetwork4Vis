@@ -1,0 +1,1 @@
+c:\users\valentina\documents\visual studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\bin\Debug\SimpleBankingModel.exe.config
