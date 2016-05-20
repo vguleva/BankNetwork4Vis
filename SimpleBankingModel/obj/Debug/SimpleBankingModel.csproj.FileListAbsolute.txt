@@ -1,1 +1,6 @@
 c:\users\valentina\documents\visual studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\bin\Debug\SimpleBankingModel.exe.config
+C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\bin\Debug\SimpleBankingModel.exe
+C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\bin\Debug\SimpleBankingModel.pdb
+C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\obj\Debug\SimpleBankingModel.csprojResolveAssemblyReference.cache
+C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\obj\Debug\SimpleBankingModel.exe
+C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\obj\Debug\SimpleBankingModel.pdb

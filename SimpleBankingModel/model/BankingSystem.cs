@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using SimpleBankingModel.classes;
 
 namespace SimpleBankingModel.model
 {
@@ -17,24 +20,72 @@ namespace SimpleBankingModel.model
         /// </summary>
         internal List<Customer> Customers;
         /// <summary>
-        /// Interbank Network Edges
+        /// Interbank Network Edges.
+        /// Both source and target vertexes are banks
         /// </summary>
-        internal List<Edge> IbNetwork;
+        internal EventList<Edge> IbNetwork = new EventList<Edge>();
         /// <summary>
-        /// External network edges
+        /// External network edges.
+        /// One of vertexes is customer
         /// </summary>
-        internal List<Edge> ENetwork;
+        internal EventList<Edge> ENetwork = new EventList<Edge>();
 
         /// <summary>
         /// Current iteration number
         /// </summary>
-        private static int curIt = 0;
+        private static EventValue<int> _curIt = new EventValue<int>();
 
-        void Iteration()
+        internal BankingSystem(int banksNum, int custNum)
+        {
+            Banks = new List<Bank>();
+            Customers = new List<Customer>();
+
+            for(var i = 0; i < custNum; i++)
+                Customers.Add(new Customer(i));
+            for(var i=0; i < banksNum; i++)
+                Banks.Add(new Bank(i));
+            
+            Initialize();
+        }
+
+        /// <summary>
+        /// Subscribe on events
+        /// </summary>
+        void Initialize()
+        {
+            _curIt.OnChange += UpdatePreviousBalanceSheets();
+            IbNetwork.OnAdd += delegate(Edge item)
+            {
+                Banks.First(x => x.ID == item.Source).IA_Plus(item.Weight);
+                Banks.First(x => x.ID == item.Target).IL_Plus(item.Weight);
+            };
+            ENetwork.OnAdd += delegate(Edge item) { 
+                if (Regex.IsMatch(item.Source, @"b\d+") && Regex.IsMatch(item.Target, @"c\d+"))
+                    Banks.First(x => x.ID == item.Source).EA_Plus(item.Weight);
+                else if (Regex.IsMatch(item.Source, @"c\d+") && Regex.IsMatch(item.Target, @"b\d+"))
+                    Banks.First(x => x.ID == item.Target).EL_Plus(item.Weight);
+            };
+            IbNetwork.OnRemove += delegate(Edge item)
+            {
+                Banks.First(x => x.ID == item.Source).IA_Minus(item.Weight);
+                Banks.First(x => x.ID == item.Target).IL_Minus(item.Weight);
+            };
+            ENetwork.OnRemove += delegate(Edge item)
+            {
+                if (Regex.IsMatch(item.Source, @"b\d+") && Regex.IsMatch(item.Target, @"c\d+"))
+                    Banks.First(x => x.ID == item.Source).EA_Minus(item.Weight);
+                else if (Regex.IsMatch(item.Source, @"c\d+") && Regex.IsMatch(item.Target, @"b\d+"))
+                    Banks.First(x => x.ID == item.Target).EL_Minus(item.Weight);
+            };
+        }
+
+        internal void Iteration()
         {
             NewEdgesENetwork();
             NewEdgesINetwork();
             DeleteExpiredEdges();
+            // todo insolvent banks action, shock propagation
+            _curIt++;
         }
 
         private void NewEdgesENetwork()
@@ -44,13 +95,14 @@ namespace SimpleBankingModel.model
 
             foreach (var customer in Customers)
             {
-                var bankNum = bankChooser.Next(0, Banks.Count);
-                var size = EdgeWeight;
-                var maturity = Maturity;
+                var bankNum  = ChooseBank();
+                var size     = ChooseWeight();
+                var maturity = ChooseMaturity();
+
                 if (loanDepo.NextDouble() < LoanDepoShare)
-                    ENetwork.Add(new Edge("b" + bankNum, customer.ID, size, maturity, curIt));
+                    ENetwork.Add(new Edge("b" + bankNum, customer.ID, size, maturity, _curIt));
                 else
-                    ENetwork.Add(new Edge(customer.ID, "b" + bankNum, size, maturity, curIt));
+                    ENetwork.Add(new Edge(customer.ID, "b" + bankNum, size, maturity, _curIt));
             }
         }
 
@@ -60,18 +112,26 @@ namespace SimpleBankingModel.model
             foreach (var bank in Banks)
             {
                 if (bank.NW > 0) continue;
-                var bankNum = bankChooser.Next(0, Banks.Count);
-                var size = EdgeWeight;
-                var maturity = Maturity;
-                IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, curIt));
+                for (var i = 0; i < -bank.NW; i++)
+                {
+                    var bankNum = ChooseBank();
+                    var size = ChooseWeight(); // TODO size=-NW
+                    var maturity = ChooseMaturity();
+                    IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, _curIt));
+                }
             }
         }
 
         private void DeleteExpiredEdges()
         {
-            ENetwork.RemoveAll(x => x.Expires == curIt);
-            IbNetwork.RemoveAll(x => x.Expires == curIt);
+            ENetwork.RemoveAll(x => x.Expires == _curIt.ToEventFreeType());
+            IbNetwork.RemoveAll(x => x.Expires == _curIt.ToEventFreeType());
         }
-        
+
+        private void UpdatePreviousBalanceSheets()
+        {
+            foreach (var bank in Banks)
+                bank.UpdatePreviousBalanceSheetValues();
+        }
     }
 }

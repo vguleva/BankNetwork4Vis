@@ -1,4 +1,7 @@
-﻿namespace SimpleBankingModel.model
+﻿using System.Collections.Generic;
+using System.Deployment.Internal;
+
+namespace SimpleBankingModel.model
 {
     class Bank
     {
@@ -32,5 +35,42 @@
         {
             get { return EA + IA - EL - IL; }
         }
+
+        internal int prevIA;
+        internal int prevIL;
+        internal int prevEA;
+        internal int prevEL;
+        internal int prevNW {get { return prevEA + prevIA - prevEL - prevIL; }}
+
+
+        internal Bank(int id)
+        {
+            ID = "b"+id;
+            IA = 0;
+            IL = 0;
+            EA = 0;
+            EL = 0;
+        }
+
+        internal void IA_Plus(int value) { IA += value; }
+        //(int value) {IA += value;// NW += value;}
+        internal void IL_Plus(int value) { IL += value; }
+        internal void EA_Plus(int value) { EA += value; }
+        internal void EL_Plus(int value) { EL += value; }
+
+        internal void IA_Minus(int value) { IA -= value; }
+        internal void IL_Minus(int value) { IL -= value; }
+        internal void EA_Minus(int value) { EA -= value; }
+        internal void EL_Minus(int value) { EL -= value; }
+
+        internal void UpdatePreviousBalanceSheetValues()
+        {
+            prevIA = IA;
+            prevIL = IL;
+            prevEA = EA;
+            prevEL = EL;
+        }
+
+
     }
 }

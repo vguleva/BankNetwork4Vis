@@ -41,6 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="classes\EventList.cs" />
+    <Compile Include="model\BankingSystem.Policies.cs" />
+    <Compile Include="structs\Edge.cs" />
+    <Compile Include="model\Bank.cs" />
+    <Compile Include="model\BankingSystem.Parameters.cs" />
+    <Compile Include="model\BankingSystem.cs" />
+    <Compile Include="model\Customer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
