@@ -20,7 +20,7 @@ namespace SimpleBankingModel.model
         #region Bank parameters (how bank create edges)
         #endregion
 
-        #region Model simplification: edges default 
+        #region Model simplification:  default edges parameters
         // todo  embed as edge parameters by default, using config
         /// <summary>
         /// The way of choosing an edge weight
@@ -31,5 +31,6 @@ namespace SimpleBankingModel.model
         /// </summary>
         private const int Maturity = 1;
         #endregion
-    }
+    }// todo encapsulate each parameter group as a single class
+    // todo encapsulate parameters as a single class or config (smth like this...)
 }

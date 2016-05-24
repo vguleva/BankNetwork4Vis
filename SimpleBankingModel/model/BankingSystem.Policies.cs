@@ -22,9 +22,11 @@ namespace SimpleBankingModel.model
         {
             return Maturity;
         }
+    }
+}// todo encapsuate bank policy as a single parameter; encapsulate the balance sheet as a class either
 
-        /*
-        public static int ReturnTerm()
+
+/*        public static int ReturnTerm()
         {
             // eval term
             int tmpTerm;
@@ -37,5 +39,3 @@ namespace SimpleBankingModel.model
             return tmpTerm;
         }
          */
-    }
-}

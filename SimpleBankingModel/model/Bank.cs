@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Deployment.Internal;
 
 namespace SimpleBankingModel.model
@@ -36,6 +37,7 @@ namespace SimpleBankingModel.model
             get { return EA + IA - EL - IL; }
         }
 
+        internal const int DefaultValueNW = 0; // todo replace to bankPolicy parameters or to environment parameters
         internal int prevIA;
         internal int prevIL;
         internal int prevEA;
@@ -71,6 +73,20 @@ namespace SimpleBankingModel.model
             prevEL = EL;
         }
 
+        #region Dynamics properties
+        internal double Velocity{get { return NW - prevNW; }}
+
+        internal int Remoteness
+        {
+            get
+            {
+                if (Velocity < 0)
+                    return (int)Math.Ceiling((NW - DefaultValueNw)/Math.Abs(Velocity));
+                return Int32.MaxValue;
+            }
+        }
+
+        #endregion
 
     }
 }

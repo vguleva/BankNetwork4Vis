@@ -14,89 +14,23 @@ using System.Data.Odbc;
 
 namespace SimpleBankingModel.classes
 {
-    /*class Network
+    static class Network
     {
+        static double AverageDegree(IList<Edge> edges) { }
+        static double AverageClustering() { }
+        static double AverageShortestPath() { }
+        static double[] LaplacianSpectrum() { }
+
+        static double Entropy(IEnumerable<double> serie)
+        {
+            return -serie.Sum(x => x * Math.Log(x));
+        }
     }
-     */
-    class Network
+    
+    
+    class Network_
     {
-        /// <summary>
-        /// Calculates degree of each bank in current moment.
-        /// </summary>
-        internal SortedDictionary<int, int> DegreeDistribution()
-        {
-            // degree--amount
-            var distr = new SortedDictionary<int, int>();
-            foreach (var bank in Banks)
-            {
-                var curBankDegree =
-                    bank.IntAssList.Count(rec => rec.TimeInModel < TimeInModel && rec.DateOfRepayment != -1) +
-                    bank.IntLiaList.Count(rec => rec.TimeInModel < TimeInModel && rec.DateOfRepayment != -1);
-                if (distr.ContainsKey(curBankDegree))
-                {
-                    var tmpVal = distr.First(x => x.Key == curBankDegree).Value;
-                    distr.Remove(curBankDegree);
-                    distr.Add(curBankDegree, tmpVal + 1);
-                }
-                else distr.Add(curBankDegree, 1);
-            }
-            return distr;
-        }
-
-        /// <summary>
-        /// Summarize all interbank borrowing across the network
-        /// at the current value of TimeInModel 
-        /// </summary>
-        /// <returns>IA across the network</returns>
-        internal double IA
-        {
-            get { return Banks.Sum(bank => bank.InterbankLiabilities); }
-        }
-
-        internal double AF
-        {
-            get { return Banks.Sum(bank => bank.AvailableFunds); }
-        }
-
-        internal double NW
-        {
-            get { return Banks.Sum(bank => bank.NetWorth); }
-        }
-
-        /**********************************************************
-         * FINANCIAL PROPERTIES
-         **********************************************************/
-
-        internal double MaxNetworth
-        {
-            get { return Banks.Max(bank => bank.NetWorth); }
-        }
-
-        internal double MinNetworth
-        {
-            get { return Banks.Min(bank => bank.NetWorth); }
-        }
-
-        internal double AverageNetworth
-        {
-            get { return Banks.Average(bank => bank.NetWorth); }
-        }
-
-        internal double MaxAssets
-        {
-            get { return Banks.Max(bank => bank.Assets); }
-        }
-
-        internal double MinAssets
-        {
-            get { return Banks.Min(bank => bank.Assets); }
-        }
-
-        internal double AverageAssets
-        {
-            get { return Banks.Average(bank => bank.Assets); }
-        }
-
+        
         /*************************************************************************
          *  NETWORK STRUCTURE FEATURES
          *************************************************************************
@@ -307,118 +241,8 @@ namespace SimpleBankingModel.classes
         }
 
         internal double AverageWeightedDegree_ { get; set; }
-
-        internal int NetworkDiameter
-        {
-            get
-            {
-                var longestShortestPath = 0;
-                for (var i = 0; i < NumberOfNodes; i++)
-                    if (!DeadList.Contains(i))
-                        longestShortestPath = Math.Max(longestShortestPath, BreadFirstShortestPath(i));
-                return longestShortestPath;
-            }
-        }
-
-        internal double AveragePathLength
-        {
-            get
-            {
-                var shortestPathLists = new List<double>();
-                for (var i = 0; i < NumberOfNodes - 1; i++)
-                    for (var j = i + 1; j < NumberOfNodes; j++)
-                        if (!DeadList.Contains(i) && !DeadList.Contains(j))
-                            shortestPathLists.Add(BreadFirstShortestPath(i, j));
-                return shortestPathLists.Sum()/shortestPathLists.Count;
-            }
-        }
-
-        internal double AverageClusteringCoefficient
-        {
-            get
-            {
-                var clusteringCoefficients = new List<double>();
-                var neighbors = new List<int>[NumberOfNodes];
-                for (var i = 0; i < NumberOfNodes; i++)
-                    neighbors[i] = new List<int>();
-                foreach (var edge in GraphBidirected)
-                    neighbors[edge.Source].Add(edge.Target);
-
-                for (var i = 0; i < NumberOfNodes; i++) // node enumeration
-                {
-                    if (DeadList.Contains(i)) continue;
-                    var curClust = 0;
-                    for (var j = 0; j < neighbors[i].Count - 1; j++)
-                        for (var k = 1; k < neighbors[i].Count; k++)
-                            if (GraphBidirected.Contains(new Edge(neighbors[i][j], neighbors[i][k])))
-                                curClust++;
-                    clusteringCoefficients.Add(curClust);
-                }
-                return clusteringCoefficients.Sum()/clusteringCoefficients.Count;
-            }
-        }
-
-
-        private Dictionary<int, int> _sourceNeighbourList;
-
-        internal int BreadFirstShortestPath(int source)
-        {
-            // list with distances to neighbors
-            _sourceNeighbourList = new Dictionary<int, int>();
-            for (var i = 0; i < NumberOfNodes; i++)
-                _sourceNeighbourList.Add(i, -1);
-            _sourceNeighbourList[source] = 0;
-            rec(source);
-            var result = _sourceNeighbourList.Max(x => x.Value);
-            _sourceNeighbourList.Clear();
-            return result;
-        }
-
-        private void rec(int start)
-        {
-            foreach (var edge in GraphBidirected.Where(edge => edge.Source == start))
-                if (_sourceNeighbourList.All(x => x.Value != -1))
-                    return; // _shortestPath;
-                else if (_sourceNeighbourList[edge.Target] == -1)
-                {
-                    //_shortestPath++;
-                    _sourceNeighbourList[edge.Target] = _sourceNeighbourList[start] + 1;
-                    rec(edge.Target);
-                }
-        }
-
-        internal int BreadFirstShortestPath(int source, int target)
-        {
-            // list with distances to neighbors: Dict<vertex number, path length to it from source>
-            _sourceNeighbourList = new Dictionary<int, int>();
-            for (var i = 0; i < NumberOfNodes; i++)
-                _sourceNeighbourList.Add(i, -1);
-            _sourceNeighbourList[source] = 0;
-            rec(source, target);
-            var result = _sourceNeighbourList[target];
-            _sourceNeighbourList.Clear();
-            return result;
-        }
-
-        private void rec(int start, int target)
-        {
-            foreach (var edge in GraphBidirected.Where(edge => edge.Source == start))
-                if (_sourceNeighbourList.All(x => x.Value != -1))
-                    return; // _shortestPath;
-                else if (edge.Target == target)
-                {
-                    _sourceNeighbourList[edge.Target] = _sourceNeighbourList[start] + 1;
-                    return;
-                }
-                else if (_sourceNeighbourList[edge.Target] == -1)
-                {
-                    //_shortestPath++;
-                    _sourceNeighbourList[edge.Target] = _sourceNeighbourList[start] + 1;
-                    rec(edge.Target);
-                }
-        }
-
-        private HashSet<Edge> GraphBidirected
+        
+        private IEnumerable<Edge> GraphBidirected
         {
             get
             {

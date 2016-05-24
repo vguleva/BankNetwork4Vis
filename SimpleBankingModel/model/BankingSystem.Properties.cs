@@ -16,18 +16,32 @@ namespace SimpleBankingModel.model
         /// <returns></returns>
         double MeanVelocity()
         {
-            foreach (var bank in Banks)
-            {
-                
-            }
             return Banks.Average(x => x.Velocity);
         }
         /// <summary>
         /// \sigma^2=N^{-1}*(\sum_{i}{(average-i)^2})
         /// </summary>
         /// <returns></returns>
-        double VarianceVelocity(){}
-
+        double VarianceVelocity()
+        {
+            return Banks.Average(x => Math.Sqrt(x.Velocity - MeanVelocity()));
+        }
+        double MeanRemoteness()
+        {
+            return Banks.Average(x => x.Remoteness);
+        }
+        double VarianceRemoteness()
+        {
+            return Banks.Average(x => Math.Sqrt(x.Remoteness - MeanRemoteness()));
+        }
+        double NegativeVelocityShare()
+        {
+            return (double)Banks.Count(x => x.Velocity < 0)/Banks.Count;
+        }
+        double T_ThreatenedSetCardinality(int T)
+        {
+            return Banks.Count(x => x.NW > Bank.DefaultValueNW && x.Velocity < 0 && x.Remoteness < T);
+        }
         #endregion
         #region TOPOLOGY+NODE DYNAMICS
 
@@ -44,15 +58,7 @@ namespace SimpleBankingModel.model
         
         #endregion
         #region TOPOLOGY
-        double AverageDegree(){}
-        double AverageClustering(){}
-        double AverageShortestPath(){}
-        double[] LaplacianSpectrum(){}
-
-        double Entropy(IEnumerable<double> serie)
-        {
-            return - serie.Sum(x => x*Math.Log(x));
-        }
+       
         #endregion
 
         /// <summary>
