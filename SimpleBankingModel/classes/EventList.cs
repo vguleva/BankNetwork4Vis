@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SimpleBankingModel.classes
 {
-    class EventList<T>:List<T>
+    sealed class EventList<T>:List<T>
     {
         public delegate void MethodContainer(T item);
         public event MethodContainer OnAdd;

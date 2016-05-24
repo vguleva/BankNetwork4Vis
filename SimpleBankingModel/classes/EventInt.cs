@@ -7,20 +7,46 @@ using System.Threading.Tasks;
 
 namespace SimpleBankingModel.classes
 {
-    internal class EventValue<T> // todo eventIterator
+    sealed internal class EventInt // todo refactor(?) eventIterator
     {
         //public delegate void MethodContainer(T item);
         //public event MethodContainer OnAdd;
         //public event MethodContainer OnRemove;
 
-        public delegate void ValueChangedDelegate();
+        internal delegate void ValueChangedEventHandler();
 
-        public event ValueChangedDelegate OnChange;
+        public event ValueChangedEventHandler Incremented;
 
-        // todo public Plus(){val++; OnChange();}
-    
+        private int _value;
 
-    private T _value;
+        public EventInt(int value)
+        {
+            _value = value;
+        }
+
+        public void Plus()
+        {
+            _value++;
+            Incremented();
+        }
+
+        public int GetValue()
+        {
+            return _value;
+        }
+        public int ToInt()
+        {
+            return _value;
+        }
+
+        /*
+        public void SetValue(int value)
+        {
+            _value = value;
+        }
+         */
+
+        //private T _value;
         /*
         public EventValue(T value)
         {
@@ -29,20 +55,6 @@ namespace SimpleBankingModel.classes
          */
 
         
-        public T Value
-        {
-            get { return _value; }
-            set
-            {
-                _value = value;
-                OnChange();
-            }
-        }
-
-        public T ToEventFreeType()
-        {
-            return _value;
-        }
         /*
         static public operator implicit
         private DWORD(int value)

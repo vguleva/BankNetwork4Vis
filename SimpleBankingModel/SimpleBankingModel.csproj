@@ -41,8 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="classes\EventInt.cs" />
     <Compile Include="classes\EventList.cs" />
+    <Compile Include="classes\Network.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="model\BankingSystem.Policies.cs" />
+    <Compile Include="model\BankingSystem.Properties.cs" />
     <Compile Include="structs\Edge.cs" />
     <Compile Include="model\Bank.cs" />
     <Compile Include="model\BankingSystem.Parameters.cs" />
