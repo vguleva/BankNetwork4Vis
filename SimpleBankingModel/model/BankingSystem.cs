@@ -33,7 +33,7 @@ namespace SimpleBankingModel.model
         /// <summary>
         /// Current iteration number
         /// </summary>
-        private static EventInt _curIt = new EventInt(0);// todo start it as a parameter
+        private static readonly EventInt CurIt = new EventInt(0);// todo start it as a parameter
 
         internal BankingSystem(int banksNum, int custNum)
         {
@@ -53,7 +53,7 @@ namespace SimpleBankingModel.model
         /// </summary>
         void Initialize()
         {
-            _curIt.Incremented += delegate()
+            CurIt.Incremented += delegate()
             {
                 foreach (var bank in Banks)
                     bank.UpdatePreviousBalanceSheetValues();
@@ -89,7 +89,7 @@ namespace SimpleBankingModel.model
             NewEdgesINetwork();
             DeleteExpiredEdges();
             // todo insolvent banks action, shock propagation
-            _curIt.Plus();
+            CurIt.Plus();
         }
 
         private void NewEdgesENetwork()
@@ -104,9 +104,9 @@ namespace SimpleBankingModel.model
                 var maturity = ChooseMaturity();
 
                 if (loanDepo.NextDouble() < LoanDepoShare)
-                    ENetwork.Add(new Edge("b" + bankNum, customer.ID, size, maturity, _curIt.ToInt()));
+                    ENetwork.Add(new Edge("b" + bankNum, customer.ID, size, maturity, CurIt.ToInt()));
                 else
-                    ENetwork.Add(new Edge(customer.ID, "b" + bankNum, size, maturity, _curIt.ToInt()));
+                    ENetwork.Add(new Edge(customer.ID, "b" + bankNum, size, maturity, CurIt.ToInt()));
             }
         }
 
@@ -121,15 +121,15 @@ namespace SimpleBankingModel.model
                     var bankNum = ChooseBank();
                     var size = ChooseWeight(); // TODO size=-NW
                     var maturity = ChooseMaturity();
-                    IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, _curIt.ToInt()));
+                    IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, CurIt.ToInt()));
                 }
             }
         }
 
         private void DeleteExpiredEdges()
         {
-            ENetwork.RemoveAll(x => x.Expires == _curIt.ToInt());
-            IbNetwork.RemoveAll(x => x.Expires == _curIt.ToInt());
+            ENetwork.RemoveAll(x => x.Expires == CurIt.ToInt());
+            IbNetwork.RemoveAll(x => x.Expires == CurIt.ToInt());
         }
 
         private void UpdatePreviousBalanceSheets()

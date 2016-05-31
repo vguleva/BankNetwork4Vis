@@ -81,7 +81,7 @@ namespace SimpleBankingModel.model
             get
             {
                 if (Velocity < 0)
-                    return (int)Math.Ceiling((NW - DefaultValueNw)/Math.Abs(Velocity));
+                    return (int)Math.Ceiling((NW - DefaultValueNW)/Math.Abs(Velocity));
                 return Int32.MaxValue;
             }
         }
