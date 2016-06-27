@@ -54,6 +54,14 @@ namespace SimpleBankingModel.model
             EL = 0;
         }
 
+        internal int GetA()
+        {
+            return IA + EA;
+        }
+        internal int GetL()
+        {
+            return IL + EL;
+        }
         internal void IA_Plus(int value) { IA += value; }
         //(int value) {IA += value;// NW += value;}
         internal void IL_Plus(int value) { IL += value; }

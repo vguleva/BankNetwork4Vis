@@ -1,4 +1,8 @@
-﻿namespace SimpleBankingModel
+﻿using System;
+using System.Collections.Generic;
+using IronPython.Modules;
+
+namespace SimpleBankingModel
 {
     public struct Edge
     {
@@ -49,6 +53,21 @@
             Maturity = maturity;
             Created = tim;
             Expires = Created + Maturity;
+        }
+
+        internal string ToStringNX()
+        {
+            string[] edgeAttributesList = {IntSource(), IntTarget(), Weight.ToString()};
+            return String.Join(";", edgeAttributesList);
+        }
+
+        internal string IntSource()
+        {
+            return Source.Substring(1);
+        }
+        internal string IntTarget()
+        {
+            return Target.Substring(1);
         }
     }
 

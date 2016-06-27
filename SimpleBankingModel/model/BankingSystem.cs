@@ -33,13 +33,13 @@ namespace SimpleBankingModel.model
         /// <summary>
         /// Current iteration number
         /// </summary>
-        private static readonly EventInt CurIt = new EventInt(0);// todo start it as a parameter
+        EventInt CurIt = new EventInt(0);// todo start it as a parameter
 
         internal BankingSystem(int banksNum, int custNum)
         {
             Banks = new List<Bank>();
             Customers = new List<Customer>();
-
+            CurIt.SetValue(0);
             for(var i = 0; i < custNum; i++)
                 Customers.Add(new Customer(i));
             for(var i=0; i < banksNum; i++)
@@ -83,25 +83,24 @@ namespace SimpleBankingModel.model
             };
         }
 
-        internal void Iteration()
+        internal void Iteration(Policy bankPolicy, Policy customerPolicy, int defaultMaturity)
         {
-            NewEdgesENetwork();
-            NewEdgesINetwork();
+            CurIt.Plus();// write current values to previous
+            NewEdgesENetwork(customerPolicy, defaultMaturity);
+            NewEdgesINetwork(bankPolicy, defaultMaturity);
             DeleteExpiredEdges();
             // todo insolvent banks action, shock propagation
-            CurIt.Plus();
+            
         }
 
-        private void NewEdgesENetwork()
+        private void NewEdgesENetwork(Policy customerPolicy, int defaultMaturity)
         {
-            var bankChooser = new Random();
             var loanDepo = new Random();
-
             foreach (var customer in Customers)
             {
-                var bankNum  = ChooseBank();
+                int bankNum ; ChooseBank(customerPolicy," ",out bankNum);
                 var size     = ChooseWeight();
-                var maturity = ChooseMaturity();
+                var maturity = ChooseMaturity(defaultMaturity);
 
                 if (loanDepo.NextDouble() < LoanDepoShare)
                     ENetwork.Add(new Edge("b" + bankNum, customer.ID, size, maturity, CurIt.ToInt()));
@@ -110,17 +109,20 @@ namespace SimpleBankingModel.model
             }
         }
 
-        private void NewEdgesINetwork()
+        private void NewEdgesINetwork(Policy bankPolicy, int defaultMaturity)
         {
-            var bankChooser = new Random();
             foreach (var bank in Banks)
             {
                 if (bank.NW > 0) continue;
-                for (var i = 0; i < -bank.NW; i++)
+                //var assetRequired = bank.NW;
+                //for (var i = 0; i <= -2*assetRequired; i++)
+                while(bank.NW <= 0)    
                 {
-                    var bankNum = ChooseBank();
+                    int bankNum;
+                    ChooseBank(bankPolicy, bank.ID, out bankNum);
+                     
                     var size = ChooseWeight(); // TODO size=-NW
-                    var maturity = ChooseMaturity();
+                    var maturity = ChooseMaturity(defaultMaturity);
                     IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, CurIt.ToInt()));
                 }
             }
@@ -137,5 +139,27 @@ namespace SimpleBankingModel.model
             foreach (var bank in Banks)
                 bank.UpdatePreviousBalanceSheetValues();
         }
+
+        private void ChooseBank(Policy bankPolicy, string bankID, out int bankNum)
+        {
+            if(bankPolicy==Policy.R)
+                bankNum = ChooseBank();
+            else if (bankPolicy == Policy.P)
+                bankNum = ChooseBank_PreferentiallyAssets();
+            else bankNum = ChooseBank_AssortativeAssets(bankID);
+            //switch (bankPolicy)
+            //{
+            //    case Policy.Random:
+            //        bankNum = ChooseBank();
+            //        break;
+            //    case Policy.Preferential:
+            //        bankNum = ChooseBankPreferentiallyAssets();
+            //        break;
+            //    case Policy.Assortative:
+            //        bankNum = ChooseBank_AssortativeAssets(bankID);
+            //        break;
+            //}
+        }
+        
     }
 }

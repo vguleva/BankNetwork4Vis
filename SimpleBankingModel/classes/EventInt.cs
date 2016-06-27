@@ -39,12 +39,11 @@ namespace SimpleBankingModel.classes
             return _value;
         }
 
-        /*
         public void SetValue(int value)
         {
             _value = value;
         }
-         */
+        
 
         //private T _value;
         /*

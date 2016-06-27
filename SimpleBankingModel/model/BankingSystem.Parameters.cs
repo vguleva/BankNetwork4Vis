@@ -29,7 +29,7 @@ namespace SimpleBankingModel.model
         /// <summary>
         /// The way of choosing an edge lifetime
         /// </summary>
-        private const int Maturity = 1;
+        private const int Maturity = 3;
         #endregion
     }// todo encapsulate each parameter group as a single class
     // todo encapsulate parameters as a single class or config (smth like this...)

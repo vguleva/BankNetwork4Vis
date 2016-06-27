@@ -4,3 +4,5 @@ C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\Simp
 C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\obj\Debug\SimpleBankingModel.csprojResolveAssemblyReference.cache
 C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\obj\Debug\SimpleBankingModel.exe
 C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\obj\Debug\SimpleBankingModel.pdb
+C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\bin\Debug\log4net.dll
+C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\bin\Debug\log4net.xml

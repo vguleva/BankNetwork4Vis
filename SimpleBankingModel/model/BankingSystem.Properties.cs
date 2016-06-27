@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Deployment.Internal;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SimpleBankingModel.classes;
 
 namespace SimpleBankingModel.model
 {
@@ -10,33 +12,44 @@ namespace SimpleBankingModel.model
     {
         #region NODES STATES DYNAMICS
 
+        double _negativeNwShare;
+        void UpdateNegativeNWShare()
+        {
+            _negativeNwShare= (double)Banks.Count(x => x.NW < 0)/Banks.Count;
+        }
+        double _meanVelocity;
         /// <summary>
         /// N^{-1}*\sum{i}
         /// </summary>
         /// <returns></returns>
-        double MeanVelocity()
+        void UpdateMeanVelocity()
         {
-            return Banks.Average(x => x.Velocity);
+            _meanVelocity = Banks.Average(x => x.Velocity);
         }
+
+        double _varianceVelocity;
         /// <summary>
         /// \sigma^2=N^{-1}*(\sum_{i}{(average-i)^2})
         /// </summary>
         /// <returns></returns>
-        double VarianceVelocity()
+        void UpdateVarianceVelocity()
         {
-            return Banks.Average(x => Math.Pow(x.Velocity - MeanVelocity(), 2));
+            _varianceVelocity= Banks.Average(x => Math.Pow(x.Velocity - _meanVelocity, 2));
         }
-        double MeanRemoteness()
+        double _meanRemoteness;
+        void UpdateMeanRemoteness()
         {
-            return Banks.Average(x => x.Remoteness);
+            _meanRemoteness= Banks.Average(x => x.Remoteness);
         }
-        double VarianceRemoteness()
+        double _varianceRemoteness;
+        void UpdateVarianceRemoteness()
         {
-            return Banks.Average(x => Math.Pow(x.Remoteness - MeanRemoteness(), 2));
+            _varianceRemoteness= Math.Round(Banks.Average(x => Math.Pow(x.Remoteness - _meanRemoteness, 2)), 5);
         }
-        double NegativeVelocityShare()
+        double _negativeVelocityShare;
+        void UpdateNegativeVelocityShare()
         {
-            return (double)Banks.Count(x => x.Velocity < 0)/Banks.Count;
+            _negativeVelocityShare = (double)Banks.Count(x => x.Velocity < 0)/Banks.Count;
         }
         double T_ThreatenedSetCardinality(int T)
         {
@@ -44,6 +57,8 @@ namespace SimpleBankingModel.model
         }
         #endregion
         #region TOPOLOGY+NODE DYNAMICS
+
+        //private double _edgePotential;
         /// <summary>
         /// Undirected edge feature.
         /// If edge expires before some bank go bankrupt,
@@ -58,8 +73,10 @@ namespace SimpleBankingModel.model
             var r2 = Banks.First(x => x.ID == edge.Target).Remoteness;
             if (m < r1 && m < r2)
                 return 1;
-            return -1;
+            return - 1;
         }
+
+        //private double WeightedEdgePotential;
         private double WeightedEdgePotential(Edge edge)
         {
             var m = edge.Maturity;
@@ -74,13 +91,14 @@ namespace SimpleBankingModel.model
                 return RelativeGain(edge.Weight,s1, s2);
             if (r1 < r2)
                 return RelativeLoss(v1, s2, edge.Weight);
-            return RelativeLoss(v2, s1, edge.Weight);
+            return  RelativeLoss(v2, s1, edge.Weight);
         }
-        
-        internal double MeanWeightedPotential()
+
+        private double MeanWeightedPotential;
+        /*internal double*/void UpdateMeanWeightedPotential()
         {
-            if (IbNetwork.Count == 0) return 0;
-            return IbNetwork.Average(x => WeightedEdgePotential(x));
+            if (IbNetwork.Count == 0) MeanWeightedPotential= 0;
+            MeanWeightedPotential= IbNetwork.Average(x => WeightedEdgePotential(x));
         }
         internal double VarianceWeightedPotential()
         {
@@ -93,21 +111,23 @@ namespace SimpleBankingModel.model
             }
             return (double)sum/IbNetwork.Count;
              */
-            return IbNetwork.Average(x => Math.Pow(EdgePotential(x) - MeanWeightedPotential(), 2));
+            return IbNetwork.Average(x => Math.Pow(EdgePotential(x) - MeanWeightedPotential, 2)); // todo edge potential is evaled at least twice
         }
+
+        private double MeanUnwaightedPotential;
         /// <summary>
         /// Summarize all potentials of edges and
         /// </summary>
         /// <returns></returns>
-        internal double MeanUnwaightedPotential()
+        internal void UpdateMeanUnwaightedPotential()
         {
-            if (IbNetwork.Count == 0) return 0;
-            return IbNetwork.Average(x => EdgePotential(x));
+            if (IbNetwork.Count == 0) MeanUnwaightedPotential= 0;
+            MeanUnwaightedPotential= Math.Round(IbNetwork.Average(x => EdgePotential(x)), 5);
         }
         internal double VarianceUnweightedPotential()
         {
             if (IbNetwork.Count == 0) return 0;
-            return IbNetwork.Average(x=>Math.Pow(EdgePotential(x)-MeanUnwaightedPotential(), 2));
+            return Math.Round(IbNetwork.Average(x=>Math.Pow(EdgePotential(x)-MeanUnwaightedPotential, 2)), 5);
         }
         
         /// <summary>
@@ -117,7 +137,7 @@ namespace SimpleBankingModel.model
         internal double NegativeUnweightedPotentialShare()
         {
             if (IbNetwork.Any(x => EdgePotential(x) < 0))
-                return (double)IbNetwork.Count(x => EdgePotential(x) < 0)/IbNetwork.Count;
+                return Math.Round((double)IbNetwork.Count(x => EdgePotential(x) < 0)/IbNetwork.Count, 5);
             return 0;
         }
 
@@ -134,16 +154,16 @@ namespace SimpleBankingModel.model
         /// <returns>edgeWeight*(1/node1State + 1/node2State)</returns>
         private double RelativeGain(int edgeWeight, int node1State, int node2State)
         {
-            int addend1;
-            int addend2;
+            double addend1;
+            double addend2;
             
             if (node1State <= 0)
                 addend1 = edgeWeight;
-            else addend1 = edgeWeight/node1State;
+            else addend1 = (double)edgeWeight/node1State;
             
             if (node2State <= 0)
                 addend2 = edgeWeight;
-            else addend2 = edgeWeight/node2State;
+            else addend2 = (double)edgeWeight/node2State;
 
             return addend1 + addend2;
         }
@@ -171,24 +191,40 @@ namespace SimpleBankingModel.model
 
         internal string GetSystemState()
         {
-            IEnumerable<double> features = new List<double>()
+            IEnumerable<string> features = new List<string>()
             {
-                /* 0*/CurIt.ToInt(),
-                /* 1*/MeanVelocity(),
-                /* 2*/VarianceVelocity(),
-                /* 3*/MeanRemoteness(),
-                /* 4*/VarianceRemoteness(),
-                /* 5*/NegativeVelocityShare(),
-                /* 6*/T_ThreatenedSetCardinality(50),
-                /* 7*/T_ThreatenedSetCardinality(400),
-                /* 8*/MeanUnwaightedPotential(),
-                /* 9*/VarianceUnweightedPotential(),
-                /*10*/Math.Round(MeanWeightedPotential(), 3),
-                /*11*/Math.Round(VarianceWeightedPotential(), 3),
-                /*12*/NegativeUnweightedPotentialShare()
+                /* 0*/CurIt.ToInt().ToString(),
+                /* 1*/_meanVelocity.ToString(),
+                /* 2*/_varianceVelocity.ToString(),
+                /* 3*/_meanRemoteness.ToString(),
+                /* 4*/_varianceRemoteness.ToString("f"),
+                /* 5*/_negativeVelocityShare.ToString(),
+                /* 6*/T_ThreatenedSetCardinality(50).ToString(),
+                /* 7*/T_ThreatenedSetCardinality(400).ToString(),
+                /* 8*/MeanUnwaightedPotential.ToString(),
+                /* 9*/VarianceUnweightedPotential().ToString(),
+                /*10*/Math.Round(MeanWeightedPotential, 3).ToString(),
+                /*11*/Math.Round(VarianceWeightedPotential(), 3).ToString(),
+                /*12*/NegativeUnweightedPotentialShare().ToString(),
+                /*13*/_negativeNwShare.ToString(),
+                Network.AverageDegree(IbNetwork).ToString("f"),
+                Network.AverageClustering(IbNetwork).ToString(),
+                Network.AverageShortestPath(IbNetwork).ToString(),
+                Network.Energy(IbNetwork).ToString(),
+                Network.PseudoEntropy(IbNetwork).ToString()
             };
-            
             return String.Join(";", features);
+        }
+
+        internal void UpdateProperties()
+        {
+            UpdateMeanVelocity();
+            UpdateVarianceVelocity();
+            UpdateMeanRemoteness();
+            UpdateVarianceRemoteness();
+            UpdateNegativeVelocityShare();
+            UpdateMeanUnwaightedPotential();
+            UpdateNegativeNWShare();
         }
     }
 }
