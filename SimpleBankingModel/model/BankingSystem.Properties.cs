@@ -121,7 +121,9 @@ namespace SimpleBankingModel.model
         /// <returns></returns>
         internal void UpdateMeanUnwaightedPotential()
         {
-            if (IbNetwork.Count == 0) MeanUnwaightedPotential= 0;
+            if (IbNetwork.Count == 0) {MeanUnwaightedPotential= 0;
+                return;
+            }
             MeanUnwaightedPotential= Math.Round(IbNetwork.Average(x => EdgePotential(x)), 5);
         }
         internal double VarianceUnweightedPotential()
@@ -216,6 +218,9 @@ namespace SimpleBankingModel.model
             return String.Join(";", features);
         }
 
+        /// <summary>
+        /// Update time-dependent features: velocity and remoteness mean and variance, negative velocity share, neg NW share, mean unvated potential
+        /// </summary>
         internal void UpdateProperties()
         {
             UpdateMeanVelocity();

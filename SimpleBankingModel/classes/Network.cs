@@ -16,6 +16,7 @@ namespace SimpleBankingModel.classes
             for (var i = 0; i < edges.Count; i++)
                 stringEdges[i] = edges[i].ToStringNX();
             dynamic script = Runtime.UseFile(Path.Combine(PathToNetworkX, "networkx/topology.py"));
+            if (!stringEdges.Any()) return 0;
             return script.average_degree(stringEdges);
         }
 
@@ -25,6 +26,7 @@ namespace SimpleBankingModel.classes
             for (var i = 0; i < edges.Count; i++)
                 stringEdges[i] = edges[i].ToStringNX();
             dynamic script = Runtime.UseFile(Path.Combine(PathToNetworkX, "networkx/topology.py"));
+            if (!stringEdges.Any()) return 0;
             double res = script.average_clustering(stringEdges);
             return Math.Round(res, 5);
         }
@@ -34,6 +36,7 @@ namespace SimpleBankingModel.classes
             for (var i = 0; i < edges.Count; i++)
                 stringEdges[i] = edges[i].ToStringNX();
             dynamic script = Runtime.UseFile(Path.Combine(PathToNetworkX, "networkx/topology.py"));
+            if (!stringEdges.Any()) return 0;
             double res =  script.average_shortest_path(stringEdges);
             return Math.Round(res, 5);
         }

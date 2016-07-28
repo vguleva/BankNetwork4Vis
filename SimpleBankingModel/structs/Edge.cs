@@ -54,17 +54,38 @@ namespace SimpleBankingModel
             Created = tim;
             Expires = Created + Maturity;
         }
-
+        /// <summary>
+        /// Joins source, Target and Weight with ';' separator
+        /// </summary>
+        /// <returns>String</returns>
         internal string ToStringNX()
         {
             string[] edgeAttributesList = {IntSource(), IntTarget(), Weight.ToString()};
             return String.Join(";", edgeAttributesList);
         }
 
+        public override string ToString()
+        {
+            string[] edgeAttributesList =
+            {
+                Source, Target, Weight.ToString(), Maturity.ToString(),
+                Created.ToString(), Expires.ToString()
+            };
+            return String.Join(";", edgeAttributesList);
+        }
+
+        /// <summary>
+        /// The source node ID without a letter identifyer
+        /// </summary>
+        /// <returns></returns>
         internal string IntSource()
         {
             return Source.Substring(1);
         }
+        /// <summary>
+        /// The target node ID without a letter identifyer
+        /// </summary>
+        /// <returns></returns>
         internal string IntTarget()
         {
             return Target.Substring(1);

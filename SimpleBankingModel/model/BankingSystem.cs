@@ -34,6 +34,7 @@ namespace SimpleBankingModel.model
         /// Current iteration number
         /// </summary>
         EventInt CurIt = new EventInt(0);// todo start it as a parameter
+        internal List<Edge> AllEdgesOverModeling = new List<Edge>();
 
         internal BankingSystem(int banksNum, int custNum)
         {
@@ -62,12 +63,14 @@ namespace SimpleBankingModel.model
             {
                 Banks.First(x => x.ID == item.Source).IA_Plus(item.Weight);
                 Banks.First(x => x.ID == item.Target).IL_Plus(item.Weight);
+                AllEdgesOverModeling.Add(item);
             };
             ENetwork.OnAdd += delegate(Edge item) { 
                 if (Regex.IsMatch(item.Source, @"b\d+") && Regex.IsMatch(item.Target, @"c\d+"))
                     Banks.First(x => x.ID == item.Source).EA_Plus(item.Weight);
                 else if (Regex.IsMatch(item.Source, @"c\d+") && Regex.IsMatch(item.Target, @"b\d+"))
                     Banks.First(x => x.ID == item.Target).EL_Plus(item.Weight);
+                AllEdgesOverModeling.Add(item);
             };
             IbNetwork.OnRemove += delegate(Edge item)
             {
@@ -82,7 +85,12 @@ namespace SimpleBankingModel.model
                     Banks.First(x => x.ID == item.Target).EL_Minus(item.Weight);
             };
         }
-
+        /// <summary>
+        /// Increment iteration num. Add new links to IB network, Ext network, delete expired edges
+        /// </summary>
+        /// <param name="bankPolicy"></param>
+        /// <param name="customerPolicy"></param>
+        /// <param name="defaultMaturity"></param>
         internal void Iteration(Policy bankPolicy, Policy customerPolicy, int defaultMaturity)
         {
             CurIt.Plus();// write current values to previous
@@ -90,7 +98,6 @@ namespace SimpleBankingModel.model
             NewEdgesINetwork(bankPolicy, defaultMaturity);
             DeleteExpiredEdges();
             // todo insolvent banks action, shock propagation
-            
         }
 
         private void NewEdgesENetwork(Policy customerPolicy, int defaultMaturity)
@@ -116,11 +123,20 @@ namespace SimpleBankingModel.model
                 if (bank.NW > 0) continue;
                 //var assetRequired = bank.NW;
                 //for (var i = 0; i <= -2*assetRequired; i++)
-                while(bank.NW <= 0)    
+                while(bank.NW < 0)    // todo ?? NW<=0
                 {
                     int bankNum;
                     ChooseBank(bankPolicy, bank.ID, out bankNum);
-                     
+                    var cnt = 0;
+                    while ("b" + bankNum == bank.ID)
+                        if (cnt < 4)
+                        {
+                            ChooseBank(bankPolicy, bank.ID, out bankNum);
+                            cnt++;
+                        }
+                        else ChooseBank(Policy.R, bank.ID, out bankNum);
+
+
                     var size = ChooseWeight(); // TODO size=-NW
                     var maturity = ChooseMaturity(defaultMaturity);
                     IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, CurIt.ToInt()));
