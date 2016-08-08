@@ -56,7 +56,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="classes\Plotter.cs" />
-    <Compile Include="enums\Policies.cs" />
     <Compile Include="model\BankingSystem.Policies.cs" />
     <Compile Include="model\BankingSystem.Properties.cs" />
     <Compile Include="structs\Edge.cs" />
@@ -69,6 +68,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="enums\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

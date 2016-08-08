@@ -15,19 +15,19 @@ namespace SimpleBankingModel.model
         /// <summary>
         /// Interbank Assets
         /// </summary>
-        private int IA;
+        internal int IA;
         /// <summary>
         /// Interbank Liabilities
         /// </summary>
-        private int IL;
+        internal int IL;
         /// <summary>
         /// External Assets
         /// </summary>
-        private int EA;
+        internal int EA;
         /// <summary>
         /// External Liabilities
         /// </summary>
-        private int EL;
+        internal int EL;
 
         /// <summary>
         /// Net Worth

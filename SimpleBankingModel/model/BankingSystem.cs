@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using SimpleBankingModel.classes;
 
 namespace SimpleBankingModel.model
@@ -36,17 +33,35 @@ namespace SimpleBankingModel.model
         EventInt CurIt = new EventInt(0);// todo start it as a parameter
         internal List<Edge> AllEdgesOverSimulation = new List<Edge>();
 
-        internal BankingSystem(int banksNum, int custNum)
+        /// <summary>
+        /// Set number of current iteration to ZERO, 
+        /// and add new customers and banks.
+        /// Initialize the system (event subscription)
+        /// </summary>
+        /// <param name="bankNum"></param>
+        /// <param name="custNum"></param>
+        internal BankingSystem(int bankNum, int custNum)
         {
+            Initialize();
+
             Banks = new List<Bank>();
             Customers = new List<Customer>();
             CurIt.SetValue(0);
             for(var i = 0; i < custNum; i++)
                 Customers.Add(new Customer(i));
-            for(var i=0; i < banksNum; i++)
+            for(var i=0; i < bankNum; i++)
                 Banks.Add(new Bank(i));
-            
-            Initialize();
+        }
+
+        /// <summary>
+        /// Constructs banking system with banks, customers, and certain initial topology
+        /// </summary>
+        /// <param name="bankNum"></param>
+        /// <param name="custNum"></param>
+        /// <param name="ibNetworkEdges"></param>
+        internal BankingSystem(int bankNum, int custNum, List<Edge> ibNetworkEdges):base()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -58,7 +73,7 @@ namespace SimpleBankingModel.model
         /// </summary>
         void Initialize()
         {
-            CurIt.Incremented += delegate()
+            CurIt.Incremented += delegate
             {
                 foreach (var bank in Banks)
                     bank.UpdatePreviousBalanceSheetValues();
@@ -89,31 +104,30 @@ namespace SimpleBankingModel.model
                     Banks.First(x => x.ID == item.Target).EL_Minus(item.Weight);
             };
         }
-        
+
         /// <summary>
         /// Increment iteration num. Add new links to IB network, Ext network, delete expired edges
         /// </summary>
         /// <param name="bankPolicy"></param>
         /// <param name="customerPolicy"></param>
-        /// <param name="defaultMaturity"></param>
-        internal void Iteration(Policy bankPolicy, Policy customerPolicy, int defaultMaturity)
+        internal void Iteration(Policy bankPolicy, Policy customerPolicy)
         {
             CurIt.Plus();// save current values of bank balance sheets to previous
-            NewEdgesENetwork(customerPolicy, defaultMaturity);
-            NewEdgesINetwork(bankPolicy, defaultMaturity);
+            NewEdgesENetwork(customerPolicy);
+            NewEdgesINetwork(bankPolicy);
             DeleteExpiredEdges();
             // todo insolvent banks action, shock propagation
             // update files with edges over simulation and bank data
         }
 
-        private void NewEdgesENetwork(Policy customerPolicy, int defaultMaturity)
+        private void NewEdgesENetwork(Policy customerPolicy)
         {
             var loanDepo = new Random();
             foreach (var customer in Customers)
             {
                 int bankNum ; ChooseBank(customerPolicy," ",out bankNum);
                 var size     = ChooseWeight();
-                var maturity = ChooseMaturity(defaultMaturity);
+                var maturity = ChooseMaturity();
 
                 if (loanDepo.NextDouble() < LoanDepoShare)
                     ENetwork.Add(new Edge("b" + bankNum, customer.ID, size, maturity, CurIt.ToInt()));
@@ -122,7 +136,7 @@ namespace SimpleBankingModel.model
             }
         }
 
-        private void NewEdgesINetwork(Policy bankPolicy, int defaultMaturity)
+        private void NewEdgesINetwork(Policy bankPolicy)
         {
             foreach (var bank in Banks)
             {
@@ -144,7 +158,7 @@ namespace SimpleBankingModel.model
 
 
                     var size = ChooseWeight(); // TODO size=-NW
-                    var maturity = ChooseMaturity(defaultMaturity);
+                    var maturity = ChooseMaturity();
                     IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, CurIt.ToInt()));
                 }
             }
