@@ -34,7 +34,7 @@ namespace SimpleBankingModel.model
         /// Current iteration number
         /// </summary>
         EventInt CurIt = new EventInt(0);// todo start it as a parameter
-        internal List<Edge> AllEdgesOverModeling = new List<Edge>();
+        internal List<Edge> AllEdgesOverSimulation = new List<Edge>();
 
         internal BankingSystem(int banksNum, int custNum)
         {
@@ -50,7 +50,11 @@ namespace SimpleBankingModel.model
         }
 
         /// <summary>
-        /// Subscribe on events
+        /// The Subscription on events.
+        /// Bank prev balance sheet update after each iteration,
+        /// ia and il update after ib-network addition and removal of links,
+        /// ea and el update after e-network changes,
+        /// allEdgesOverSimulation update after the change of each list.
         /// </summary>
         void Initialize()
         {
@@ -63,14 +67,14 @@ namespace SimpleBankingModel.model
             {
                 Banks.First(x => x.ID == item.Source).IA_Plus(item.Weight);
                 Banks.First(x => x.ID == item.Target).IL_Plus(item.Weight);
-                AllEdgesOverModeling.Add(item);
+                AllEdgesOverSimulation.Add(item);
             };
             ENetwork.OnAdd += delegate(Edge item) { 
                 if (Regex.IsMatch(item.Source, @"b\d+") && Regex.IsMatch(item.Target, @"c\d+"))
                     Banks.First(x => x.ID == item.Source).EA_Plus(item.Weight);
                 else if (Regex.IsMatch(item.Source, @"c\d+") && Regex.IsMatch(item.Target, @"b\d+"))
                     Banks.First(x => x.ID == item.Target).EL_Plus(item.Weight);
-                AllEdgesOverModeling.Add(item);
+                AllEdgesOverSimulation.Add(item);
             };
             IbNetwork.OnRemove += delegate(Edge item)
             {
@@ -85,6 +89,7 @@ namespace SimpleBankingModel.model
                     Banks.First(x => x.ID == item.Target).EL_Minus(item.Weight);
             };
         }
+        
         /// <summary>
         /// Increment iteration num. Add new links to IB network, Ext network, delete expired edges
         /// </summary>
@@ -93,11 +98,12 @@ namespace SimpleBankingModel.model
         /// <param name="defaultMaturity"></param>
         internal void Iteration(Policy bankPolicy, Policy customerPolicy, int defaultMaturity)
         {
-            CurIt.Plus();// write current values to previous
+            CurIt.Plus();// save current values of bank balance sheets to previous
             NewEdgesENetwork(customerPolicy, defaultMaturity);
             NewEdgesINetwork(bankPolicy, defaultMaturity);
             DeleteExpiredEdges();
             // todo insolvent banks action, shock propagation
+            // update files with edges over simulation and bank data
         }
 
         private void NewEdgesENetwork(Policy customerPolicy, int defaultMaturity)

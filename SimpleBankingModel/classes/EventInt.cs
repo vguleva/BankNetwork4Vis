@@ -24,6 +24,10 @@ namespace SimpleBankingModel.classes
             _value = value;
         }
 
+        /// <summary>
+        /// Increments the private value
+        /// and call the corresponding event
+        /// </summary>
         public void Plus()
         {
             _value++;

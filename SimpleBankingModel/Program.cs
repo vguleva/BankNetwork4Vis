@@ -87,7 +87,10 @@ namespace SimpleBankingModel
         }
 
         /// <summary>
-        /// A serie of deals, which occur during one program launch. (A set of iterations with some dynamics)
+        /// (A set of iterations with some dynamics)
+        /// Create banking system with banks and customers, init topology,
+        /// make iteration simulation, save system states.
+        /// Output simulation results to files after all
         /// </summary>
         /// <param name="bankPolicy">A type of bank policy</param>
         /// <param name="customerPolicy">A type of customers policy</param>

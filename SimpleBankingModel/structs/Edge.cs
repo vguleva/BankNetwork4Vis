@@ -55,7 +55,7 @@ namespace SimpleBankingModel
             Expires = Created + Maturity;
         }
         /// <summary>
-        /// Joins source, Target and Weight with ';' separator
+        /// Joins Source, Target and Weight with ';' separator
         /// </summary>
         /// <returns>String</returns>
         internal string ToStringNX()
@@ -63,7 +63,10 @@ namespace SimpleBankingModel
             string[] edgeAttributesList = {IntSource(), IntTarget(), Weight.ToString()};
             return String.Join(";", edgeAttributesList);
         }
-
+        /// <summary>
+        /// Joins all edge fields with ';' separator
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             string[] edgeAttributesList =
@@ -72,6 +75,15 @@ namespace SimpleBankingModel
                 Created.ToString(), Expires.ToString()
             };
             return String.Join(";", edgeAttributesList);
+        }
+
+        /// <summary>
+        /// Joins Sourse;Target;Creation;Maturity;Weight
+        /// for visualisation
+        /// </summary>
+        internal string ToStringKsenia()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
