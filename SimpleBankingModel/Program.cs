@@ -55,26 +55,32 @@ namespace SimpleBankingModel
         /// <param name="bankNum">Initial number of banks in the system</param>
         /// <param name="custNum">Initial number of customers in the system</param>
         /// <param name="runNumber">A number of launch</param>
-        static void Launch(int bankNum, int custNum, int runNumber)
+        static void Launch(int runNumber, int bankNum, int custNum)
         {
-            var bSystem          = new BankingSystem(bankNum, custNum, new BarabasiAlbertGraph(bankNum, 5));
-            var systemStatesData = new List<string>(); // network features over all simulation period
-            var nodeStatesData   = new List<string>(); // node-orien features over all simulation period
-
+            var bSystem = new BankingSystem(bankNum, custNum, new BarabasiAlbertGraph(bankNum, 5));// todo make a graph type be a Launch() parameter
             for (var i = 0; i < MaxIter; i++)
             {
-                if (i == 50) 
-                    BankPolicy = Policy.A;
                 bSystem.Iteration(BankPolicy, CustomerPolicy);
-                bSystem.UpdateProperties();
-
-                // Network and node features
-                systemStatesData.Add(bSystem.GetSystemState());// FOR FINAL GENERAL OUTPUT
-                var nodeStateLine = bSystem.Banks.Average(x => x.NW); // fulfill node states  
-                nodeStatesData.Add(i + ";" + nodeStateLine);// NODE STATES AT CURRENT ITER FOR FINAL GENERAL OUTPUT
-                
-                // update output files
-                OutputDataPerIter(bSystem, i);
+                bSystem.UpdateProperties(); // update time-dependent network features, save results for previous  iteration
+                OutputDataPerIter(bSystem, i); // update output files
+            }
+            GC.Collect();
+        }
+        /// <summary>
+        /// Launch with the elimination of negative net worth nodes
+        /// </summary>
+        /// <param name="runNumber"></param>
+        /// <param name="bankNum"></param>
+        /// <param name="custNum"></param>
+        /// <param name="rewiringPolicy"></param>
+        static void Launch(int runNumber, int bankNum, int custNum, object rewiringPolicy)
+        {
+            var bSystem = new BankingSystem(bankNum, custNum, new BarabasiAlbertGraph(bankNum, 5));// todo make a graph type be a Launch() parameter
+            for (var i = 0; i < MaxIter; i++)
+            {
+                bSystem.Iteration(BankPolicy, CustomerPolicy, rewiringPolicy);
+                bSystem.UpdateProperties(); // update time-dependent network features, save results for previous  iteration
+                OutputDataPerIter(bSystem, i); // update output files
             }
             GC.Collect();
         }

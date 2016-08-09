@@ -135,6 +135,15 @@ namespace SimpleBankingModel.model
             // update files with edges over simulation and bank data
         }
 
+        internal void Iteration(Policy bankPolicy, Policy customerPolicy, object rewiringPolicy)
+        {
+            Iteration(bankPolicy, customerPolicy);
+            foreach (var bank in Banks)
+            {
+                if (bank.NW<0) DeleteNode(bank.ID, rewiringPolicy);
+            }
+        }
+
         private void NewEdgesENetwork(Policy customerPolicy)
         {
             var loanDepo = new Random();
@@ -185,6 +194,17 @@ namespace SimpleBankingModel.model
             IbNetwork.RemoveAll(x => x.Expires == CurIt.ToInt());
         }
 
+        /// <summary>
+        /// The deletion of bank having this ID according to this policy of edges rewiring
+        /// 
+        /// </summary>
+        /// <param name="nodeID">The ID of a bank-node for deletion</param>
+        /// <param name="rewiringPolicy">The technique of edge rewiring</param>
+        public void DeleteNode(string nodeID, object rewiringPolicy)
+        {
+            throw new NotImplementedException();
+        }
+
         private void UpdatePreviousBalanceSheets()
         {
             foreach (var bank in Banks)
@@ -198,18 +218,6 @@ namespace SimpleBankingModel.model
             else if (bankPolicy == Policy.P)
                 bankNum = ChooseBank_PreferentiallyAssets();
             else bankNum = ChooseBank_AssortativeAssets(bankID);
-            //switch (bankPolicy)
-            //{
-            //    case Policy.Random:
-            //        bankNum = ChooseBank();
-            //        break;
-            //    case Policy.Preferential:
-            //        bankNum = ChooseBankPreferentiallyAssets();
-            //        break;
-            //    case Policy.Assortative:
-            //        bankNum = ChooseBank_AssortativeAssets(bankID);
-            //        break;
-            //}
         }
         
     }
