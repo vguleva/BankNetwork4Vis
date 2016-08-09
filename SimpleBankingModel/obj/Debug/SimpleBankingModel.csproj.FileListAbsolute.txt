@@ -6,3 +6,10 @@ C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\Simp
 C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\obj\Debug\SimpleBankingModel.pdb
 C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\bin\Debug\log4net.dll
 C:\Users\valentina\Documents\Visual Studio 2012\Projects\SimpleBankingModel\SimpleBankingModel\bin\Debug\log4net.xml
+c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\bin\Debug\SimpleBankingModel.exe.config
+c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\obj\Debug\SimpleBankingModel.exe
+c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\obj\Debug\SimpleBankingModel.pdb
+c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\bin\Debug\SimpleBankingModel.exe
+c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\bin\Debug\SimpleBankingModel.pdb
+c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\bin\Debug\log4net.dll
+c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\bin\Debug\log4net.xml

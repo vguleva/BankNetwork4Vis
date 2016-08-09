@@ -8,6 +8,7 @@ using System.Security.Authentication.ExtendedProtection;
 using IronPython.Runtime;
 using log4net;
 using SimpleBankingModel.classes;
+using SimpleBankingModel.interfaces;
 using SimpleBankingModel.model;
 
 namespace SimpleBankingModel
@@ -56,7 +57,7 @@ namespace SimpleBankingModel
         /// <param name="runNumber">A number of launch</param>
         static void Launch(int bankNum, int custNum, int runNumber)
         {
-            var bSystem          = new BankingSystem(bankNum, custNum);
+            var bSystem          = new BankingSystem(bankNum, custNum, new BarabasiAlbertGraph(bankNum, 5));
             var systemStatesData = new List<string>(); // network features over all simulation period
             var nodeStatesData   = new List<string>(); // node-orien features over all simulation period
 

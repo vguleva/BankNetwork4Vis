@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using SimpleBankingModel.classes;
+using SimpleBankingModel.interfaces;
 
 namespace SimpleBankingModel.model
 {
@@ -36,7 +37,8 @@ namespace SimpleBankingModel.model
         /// <summary>
         /// Set number of current iteration to ZERO, 
         /// and add new customers and banks.
-        /// Initialize the system (event subscription)
+        /// Initialize the system (event subscription).
+        /// Empty init graph 
         /// </summary>
         /// <param name="bankNum"></param>
         /// <param name="custNum"></param>
@@ -54,14 +56,27 @@ namespace SimpleBankingModel.model
         }
 
         /// <summary>
-        /// Constructs banking system with banks, customers, and certain initial topology
+        /// Constructs banking system with banks, customers, and certain initial topology.
+        /// For the given graph type and model parameters generates list of edges with NetworkX software,
+        /// process them, and add to interbank network edges with weight of 1, maturity of 3, creation date of 0,
+        /// and marked for banks source and target nodes.
         /// </summary>
         /// <param name="bankNum"></param>
         /// <param name="custNum"></param>
-        /// <param name="ibNetworkEdges"></param>
-        internal BankingSystem(int bankNum, int custNum, List<Edge> ibNetworkEdges):base()
+        /// <param name="graphType">Graph of sertain type and input constructor parameters</param>
+        internal BankingSystem(int bankNum, int custNum, IGraph graphType)
         {
-            throw new NotImplementedException();
+            Initialize();
+
+            Banks = new List<Bank>();
+            Customers = new List<Customer>();
+            CurIt.SetValue(0);
+            for (var i = 0; i < custNum; i++)
+                Customers.Add(new Customer(i));
+            for (var i = 0; i < bankNum; i++)
+                Banks.Add(new Bank(i));
+
+            IbNetwork.AddRange(graphType.Generate());
         }
 
         /// <summary>

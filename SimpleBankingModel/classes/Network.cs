@@ -1,15 +1,57 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using IronPython.Hosting;
+using IronPython.Runtime;
 using log4net;
 using Microsoft.Scripting.Hosting;
+using SimpleBankingModel.interfaces;
 
 namespace SimpleBankingModel.classes
 {
-    public static class Network
+    public static partial class Network
     {
+        #region CONSTRUCTOR
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Network));
+        public static readonly string PathToNetworkX;
+    
+        static readonly ScriptRuntime Runtime;
+        
+
+        static Network()
+        {
+            // prepare engine
+            var info = new DirectoryInfo((Environment.CurrentDirectory));
+            if (info.Parent != null)
+                if (info.Parent.Parent != null)
+                    PathToNetworkX = Path.Combine(info.Parent.Parent.FullName, "networkx-1.9.1");
+            //const string pathToNetworkX = @"D:\Valenitna\Downloads\STATIC\";
+
+            // host python
+            ScriptEngine engine = Python.CreateEngine();
+            ICollection<string> searchingPaths = engine.GetSearchPaths();
+            if (!Directory.Exists(@"C:\Program Files (x86)\IronPython 2.7"))
+            {
+                Log.Fatal("You need IronPython 2.7 to install!");
+                throw new Exception("You must have IronPython being installed");
+            }
+            searchingPaths.Add(@"C:\Program Files (x86)\IronPython 2.7\Lib");
+
+            // add packages for script
+            searchingPaths.Add(PathToNetworkX);
+            searchingPaths.Add(Path.Combine(PathToNetworkX, "networkx"));
+            searchingPaths.Add(@"d:\Valenitna\Documents\Projects VS2010\Financial Network Simulation\Financial Network Simulation\scipy-0.16.0\scipy");
+            searchingPaths.Add(@"d:\Valenitna\Documents\Projects VS2010\Financial Network Simulation\Financial Network Simulation\numpy-1.9.2\numpy");
+
+            // for further code: paths.Add(String.Concat(pathToNetworkX, @"networkx-1.9.1.tar\dist\networkx-1.9.1\networkx-1.9.1\networkx\generators"));
+            engine.SetSearchPaths(searchingPaths);
+
+            Runtime = engine.Runtime;
+        }
+        #endregion
+        
         public static double AverageDegree(IList<Edge> edges)
         {
             var stringEdges = new string[edges.Count];
@@ -100,43 +142,6 @@ namespace SimpleBankingModel.classes
 
         #endregion
 
-        #region CONSTRUCTOR
-        private static readonly ILog Log = LogManager.GetLogger(typeof(Network));
-
-        static readonly ScriptRuntime       Runtime;
-        static readonly string              PathToNetworkX;
-
-        static Network()
-        {
-            // prepare engine
-            var info = new DirectoryInfo((Environment.CurrentDirectory));
-            if (info.Parent != null)
-                if (info.Parent.Parent != null)
-                    PathToNetworkX = Path.Combine(info.Parent.Parent.FullName, "networkx-1.9.1");
-            //const string pathToNetworkX = @"D:\Valenitna\Downloads\STATIC\";
-
-            // host python
-            ScriptEngine engine = Python.CreateEngine();
-            ICollection<string> searchingPaths = engine.GetSearchPaths();
-            if (!Directory.Exists(@"C:\Program Files (x86)\IronPython 2.7"))
-            {
-                Log.Fatal("You need IronPython 2.7 to install!");
-                throw new Exception("You must have IronPython being installed");
-            }
-            searchingPaths.Add(@"C:\Program Files (x86)\IronPython 2.7\Lib");
-            
-            // add packages for script
-            searchingPaths.Add(PathToNetworkX);
-            searchingPaths.Add(Path.Combine(PathToNetworkX, "networkx"));
-            searchingPaths.Add(@"d:\Valenitna\Documents\Projects VS2010\Financial Network Simulation\Financial Network Simulation\scipy-0.16.0\scipy");
-            searchingPaths.Add(@"d:\Valenitna\Documents\Projects VS2010\Financial Network Simulation\Financial Network Simulation\numpy-1.9.2\numpy");
-
-            // for further code: paths.Add(String.Concat(pathToNetworkX, @"networkx-1.9.1.tar\dist\networkx-1.9.1\networkx-1.9.1\networkx\generators"));
-            engine.SetSearchPaths(searchingPaths);
-
-            Runtime = engine.Runtime;
-        }
-    
-        #endregion
+        
     }
 }

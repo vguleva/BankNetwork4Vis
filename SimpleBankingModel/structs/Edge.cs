@@ -83,7 +83,7 @@ namespace SimpleBankingModel
         /// </summary>
         internal string ToStringKsenia()
         {
-            string[] edgeAttributesList = { IntSource(), IntTarget(), Created.ToString(), Maturity.ToString(), Weight.ToString() };
+            string[] edgeAttributesList = { Source, Target, Created.ToString(), Maturity.ToString(), Weight.ToString() };
             return String.Join(";", edgeAttributesList);
         }
 

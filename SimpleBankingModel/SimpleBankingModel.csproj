@@ -37,10 +37,15 @@
     <Reference Include="log4net">
       <HintPath>D:\Valenitna\Downloads\log4net-1.2.13-bin-newkey\log4net-1.2.13\bin\net\4.0\release\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\IronPython 2.7\Microsoft.Dynamic.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Scripting.Metadata, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -55,7 +60,9 @@
     <Compile Include="classes\Network.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="classes\Network.Generators.cs" />
     <Compile Include="classes\Plotter.cs" />
+    <Compile Include="interfaces\IGraph.cs" />
     <Compile Include="model\BankingSystem.Policies.cs" />
     <Compile Include="model\BankingSystem.Properties.cs" />
     <Compile Include="structs\Edge.cs" />
