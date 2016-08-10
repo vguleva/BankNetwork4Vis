@@ -43,7 +43,7 @@ namespace SimpleBankingModel
             log4net.Config.XmlConfigurator.Configure();
             if (!Directory.Exists(BankBalanceSheetsDir))
                 Directory.CreateDirectory(BankBalanceSheetsDir);
-            Launch(BankNum, CustNum, 1);
+            Launch(1, BankNum, CustNum);
         }
 
         /// <summary>
@@ -63,6 +63,7 @@ namespace SimpleBankingModel
                 bSystem.Iteration(BankPolicy, CustomerPolicy);
                 bSystem.UpdateProperties(); // update time-dependent network features, save results for previous  iteration
                 OutputDataPerIter(bSystem, i); // update output files
+                bSystem.DeleteNode("b1",1);
             }
             GC.Collect();
         }
@@ -124,6 +125,7 @@ namespace SimpleBankingModel
         /// <param name="runNumber">a number of launch</param>
         /// <param name="otherBankPolicy">finish bank (or customer) policy</param>
         /// <param name="iterToApplyIt">the iteration when policy changes </param>
+        [Obsolete]
         static void Launch(Policy bankPolicy, Policy customerPolicy, int defaultMaturity, int runNumber, Policy otherBankPolicy, int iterToApplyIt)
         {
             string pathToSystemStates = Path.Combine(LaunchDataDir, "systemStates_m") + defaultMaturity.ToString("D2") +

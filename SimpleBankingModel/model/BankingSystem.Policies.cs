@@ -74,6 +74,46 @@ namespace SimpleBankingModel.model
         {
             return defaultMaturity;
         }
+
+        #region REWIRING POLICY (COMPARISON)
+        /*
+        private int CompareBanksByAssets(Edge x, Edge y)
+        {
+            if (x == null || x.Target >= Banks.Count)
+            {
+                if (y == null || y.BankAssignment >= Banks.Count)
+                    return 0;
+                // If x is null and y is not null, y
+                // is greater. 
+                return -1;
+            }
+            // If x is not null...
+            //
+            if (y == null || y.BankAssignment >= Banks.Count)
+                // ...and y is null, x is greater.
+                return 1;
+            // ...and y is not null, compare the 
+            // lengths of the two strings.
+            //
+            // eval total assets of x
+            var xAssets = Banks[x.BankAssignment].IntAssList.Sum(t => t.InvestmentSize) +
+                          Banks[x.BankAssignment].ExtAssList.Sum(t => t.InvestmentSize);
+            // eval total assets of y
+            var yAssets = Banks[y.BankAssignment].IntAssList.Sum(t => t.InvestmentSize) +
+                          Banks[y.BankAssignment].ExtAssList.Sum(t => t.InvestmentSize);
+            int retval = xAssets.CompareTo(yAssets);
+
+            if (retval != 0)
+                // If the strings are not of equal length,
+                // the longer string is greater.
+                //
+                return retval;
+            // If the strings are of equal length,
+            // sort them with ordinary string comparison.
+            //
+            return x.CompareTo(y);
+        }*/
+        #endregion
     }
 }// todo encapsuate bank policy as a single parameter; encapsulate the balance sheet as a class either
 

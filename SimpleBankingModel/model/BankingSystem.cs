@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using IronPython.Compiler.Ast;
 using SimpleBankingModel.classes;
 using SimpleBankingModel.interfaces;
 
@@ -135,12 +136,12 @@ namespace SimpleBankingModel.model
             // update files with edges over simulation and bank data
         }
 
-        internal void Iteration(Policy bankPolicy, Policy customerPolicy, object rewiringPolicy)
+        internal void Iteration(Policy bankPolicy, Policy customerPolicy, Comparison<Edge> rewiringComparatorA, Comparison<Edge> rewiringComparatorL)
         {
             Iteration(bankPolicy, customerPolicy);
             foreach (var bank in Banks)
             {
-                if (bank.NW<0) DeleteNode(bank.ID, rewiringPolicy);
+                if (bank.NW < 0) DeleteNode(bank.ID, rewiringComparatorA, rewiringComparatorL);
             }
         }
 
@@ -195,14 +196,49 @@ namespace SimpleBankingModel.model
         }
 
         /// <summary>
-        /// The deletion of bank having this ID according to this policy of edges rewiring
-        /// 
+        /// The deletion of bank having this ID according to this policy of edges rewiring.
+        /// Assets and liabilities are sorted according to the corresponding rules,
+        /// after which src and trg are linked according to queue.
+        /// New edges take minimum expire date and minimum weight. The rest of edge weight is for the further counter-party
         /// </summary>
         /// <param name="nodeID">The ID of a bank-node for deletion</param>
-        /// <param name="rewiringPolicy">The technique of edge rewiring</param>
-        public void DeleteNode(string nodeID, object rewiringPolicy)
+        /// <param name="rewiringComparatorA">The method of eliminated bank assets sorting</param>
+        /// <param name="rewiringComparatorL">The method of eliminated bank liabilities sorting</param>
+        public void DeleteNode(string nodeID, Comparison<Edge> rewiringComparatorA, Comparison<Edge> rewiringComparatorL)
         {
-            throw new NotImplementedException();
+            // form lists of assets and liabilities for an excluded bank
+            var assets = new List<Edge>();
+            assets.AddRange(ENetwork.Where (x => x.Source == nodeID));
+            assets.AddRange(IbNetwork.Where(x => x.Source == nodeID));
+            ENetwork.RemoveAll(x => x.Source == nodeID); // remove cur assets and liabilities from ib- and e- networks
+            var liabilities = new List<Edge>();
+            liabilities.AddRange(ENetwork.Where (x=>x.Target==nodeID));
+            liabilities.AddRange(IbNetwork.Where(x=>x.Target==nodeID));
+            IbNetwork.RemoveAll(x => x.Source == nodeID); // remove cur assets and liabilities from ib- and e- networks
+            
+            // sort formed list according to POLICY
+            assets.Sort(rewiringComparatorA);      //TODO
+            liabilities.Sort(rewiringComparatorL); //TODO
+            // add result edges to the system
+            while (assets.Count > 0 && liabilities.Count > 0)
+            {
+                var newSource = liabilities[0].Source;
+                var newTarget = assets[0].Target;
+                var newWeight = Math.Min(assets[0].Weight, liabilities[0].Weight);
+                var newExpires = Math.Min(assets[0].Expires, liabilities[0].Expires);
+                var newMaturity = newExpires - CurIt.ToInt();
+                var newEdge = new Edge(newSource, newTarget, newWeight, newMaturity, CurIt.ToInt());
+                
+                if (newSource[0] == 'b' || newTarget[0] == 'b')
+                    IbNetwork.Add(newEdge);
+                else
+                    ENetwork.Add(newEdge);
+                assets[0].SetWeight(assets[0].Weight - newWeight);
+                liabilities[0].SetWeight(assets[0].Weight - newWeight);
+
+                if (assets[0].Weight == 0)      assets.RemoveAt(0);
+                if (liabilities[0].Weight == 0) liabilities.RemoveAt(0);
+            }
         }
 
         private void UpdatePreviousBalanceSheets()

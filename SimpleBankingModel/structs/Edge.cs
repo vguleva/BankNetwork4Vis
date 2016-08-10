@@ -54,6 +54,17 @@ namespace SimpleBankingModel
             Created = tim;
             Expires = Created + Maturity;
         }
+
+        internal void SetWeight(int weight)
+        {
+            Weight = weight;
+        }
+
+        internal void SetExpires(int expires)
+        {
+            Expires = expires;
+        }
+
         /// <summary>
         /// Joins Source, Target and Weight with ';' separator
         /// </summary>

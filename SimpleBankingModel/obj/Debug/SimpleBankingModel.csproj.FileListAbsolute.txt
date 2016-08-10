@@ -13,3 +13,4 @@ c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis
 c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\bin\Debug\SimpleBankingModel.pdb
 c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\bin\Debug\log4net.dll
 c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\bin\Debug\log4net.xml
+c:\Users\valentina\Documents\Visual Studio 2012\Projects\_testGt\BankNetwork4Vis\SimpleBankingModel\obj\Debug\SimpleBankingModel.csprojResolveAssemblyReference.cache
