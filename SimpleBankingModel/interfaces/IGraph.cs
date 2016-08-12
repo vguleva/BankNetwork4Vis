@@ -92,9 +92,9 @@ namespace SimpleBankingModel.interfaces
             
             dynamic script = Runtime.UseFile(Path.Combine(PathToNetworkX, @"networkx\generators\random_graphs.py"));
             var tuples = (IList)script.barabasi_albert_graph(_nodes, _attached).edges();
-            var newlist = new List<Edge>();
-            return newlist;//(from PythonTuple tuple in tuples select new Edge("b" + (int) tuple[0], "b" + (int) tuple[1], 1, 3, 0))
-                //.ToList();
+            //var newlist = new List<Edge>();
+            return (from PythonTuple tuple in tuples select new Edge("b" + (int) tuple[0], "b" + (int) tuple[1], 1, 3, 0))
+                .ToList();
         }
     }
     

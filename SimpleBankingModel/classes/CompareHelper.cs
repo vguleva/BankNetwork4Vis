@@ -30,7 +30,7 @@ namespace SimpleBankingModel.classes
             return 0;
         }
     }
-    /* CompareEdgesByBankAssetsAscending */
+    /* CompareEdgesByBankAssetsAscending 
     public class CompareEdgesByBankAssetsAscendingHelper : IComparer<Edge>
     {
         private List<Bank> _banks;
@@ -90,5 +90,5 @@ namespace SimpleBankingModel.classes
             throw new NotImplementedException();
         }
     }
-    
+    */
 }
