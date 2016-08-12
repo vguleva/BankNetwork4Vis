@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="classes\Averager.cs" />
     <Compile Include="classes\Binninger.cs" />
+    <Compile Include="classes\CompareHelper.cs" />
     <Compile Include="classes\EventInt.cs" />
     <Compile Include="classes\EventList.cs" />
     <Compile Include="classes\Network.cs">

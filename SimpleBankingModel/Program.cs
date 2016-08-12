@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Security.Authentication.ExtendedProtection;
-using IronPython.Runtime;
 using log4net;
 using SimpleBankingModel.classes;
 using SimpleBankingModel.interfaces;
@@ -25,15 +22,17 @@ namespace SimpleBankingModel
     internal class Program
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(Program));
-        const int             BankNum = 100;
-        private const int     CustNum = 1000;
-        static Policy      BankPolicy = Policy.R;
-        static Policy  CustomerPolicy = Policy.R;
+        public const  int                 BankNum = 100;
+        public const  int                 CustNum = 1000;
+        public static Policy           BankPolicy = Policy.R;
+        public static Policy       CustomerPolicy = Policy.R;
+        public static IGraph InitialNetworkConfig = new BarabasiAlbertGraph(BankNum, 5);
+        public static IComparer<Edge> RewiringComparisonA = new CompareEdgesExpiresDescending();
+        public static IComparer<Edge> RewiringComparisonL = new CompareEdgesExpiresDescending();
+        // public Comparison<Edge> RewiringComparisonA = CompareBanksByAssets;
+        // public Comparison<Edge> RewiringComparisonL;
         const int             MaxIter = 300;
-        private const string LaunchDataDir   = @"d:\Valenitna\JExp\res_full_rew_data\";//null_model\";
-        private const string PathData        = @"d:\Valenitna\JExp\test_regul_tune";//data2";//res_full_nodes";
-        private const string PathAverageData = @"d:\Valenitna\JExp\test_regul_tune_averages";
-        // private const string pathBinningData = @"d:\Valenitna\JExp\data_binning";
+        
         private const string EdgesOverSimulationFile = "edges";
         private const string BankBalanceSheetsDir = "balance";
 
@@ -43,45 +42,29 @@ namespace SimpleBankingModel
             log4net.Config.XmlConfigurator.Configure();
             if (!Directory.Exists(BankBalanceSheetsDir))
                 Directory.CreateDirectory(BankBalanceSheetsDir);
-            Launch(1, BankNum, CustNum);
+            Launch(1); // , BankNum, CustNum, InitialNetworkConfig, RewiringComparisonA, RewiringComparisonL);
+            //
         }
 
-        /// <summary>
-        /// (A set of iterations with some dynamics)
-        /// Create banking system with banks and customers, init topology,
-        /// make iteration simulation, save system states.
-        /// Output simulation results to files after all
-        /// </summary>
-        /// <param name="bankNum">Initial number of banks in the system</param>
-        /// <param name="custNum">Initial number of customers in the system</param>
-        /// <param name="runNumber">A number of launch</param>
-        static void Launch(int runNumber, int bankNum, int custNum)
-        {
-            var bSystem = new BankingSystem(bankNum, custNum, new BarabasiAlbertGraph(bankNum, 5));// todo make a graph type be a Launch() parameter
-            for (var i = 0; i < MaxIter; i++)
-            {
-                bSystem.Iteration(BankPolicy, CustomerPolicy);
-                bSystem.UpdateProperties(); // update time-dependent network features, save results for previous  iteration
-                OutputDataPerIter(bSystem, i); // update output files
-                bSystem.DeleteNode("b1",1);
-            }
-            GC.Collect();
-        }
         /// <summary>
         /// Launch with the elimination of negative net worth nodes
         /// </summary>
         /// <param name="runNumber"></param>
         /// <param name="bankNum"></param>
         /// <param name="custNum"></param>
-        /// <param name="rewiringPolicy"></param>
-        static void Launch(int runNumber, int bankNum, int custNum, object rewiringPolicy)
+        /// <param name="graphType">The initial network configuration</param>
+        /// <param name="rewiringPolicyA">Parameter 1 for edge rewiring after node elimination</param>
+        /// <param name="rewiringPolicyL">Parameter 2 for edge rewiring after node elimination</param>
+        static void Launch(int runNumber)//, int bankNum, int custNum, IGraph graphType, Comparison<Edge> rewiringPolicyA, Comparison<Edge> rewiringPolicyL )
         {
-            var bSystem = new BankingSystem(bankNum, custNum, new BarabasiAlbertGraph(bankNum, 5));// todo make a graph type be a Launch() parameter
+            var bSystem = new BankingSystem(BankNum, CustNum, InitialNetworkConfig);// todo make a graph type be a Launch() parameter
             for (var i = 0; i < MaxIter; i++)
             {
-                bSystem.Iteration(BankPolicy, CustomerPolicy, rewiringPolicy);
+                bSystem.Iteration(BankPolicy, CustomerPolicy, RewiringComparisonA, RewiringComparisonL);
                 bSystem.UpdateProperties(); // update time-dependent network features, save results for previous  iteration
                 OutputDataPerIter(bSystem, i); // update output files
+                bSystem.DeleteNode("b1", RewiringComparisonA, RewiringComparisonL);//TODO test
+                
             }
             GC.Collect();
         }
@@ -114,46 +97,6 @@ namespace SimpleBankingModel
             }
 
             //    c) net features todo
-        }
-
-        /// <summary>
-        /// Type of launch with changeable policy
-        /// </summary>
-        /// <param name="bankPolicy">start bank policy</param>
-        /// <param name="customerPolicy">start customer policy</param>
-        /// <param name="defaultMaturity">maturity constant by default</param>
-        /// <param name="runNumber">a number of launch</param>
-        /// <param name="otherBankPolicy">finish bank (or customer) policy</param>
-        /// <param name="iterToApplyIt">the iteration when policy changes </param>
-        [Obsolete]
-        static void Launch(Policy bankPolicy, Policy customerPolicy, int defaultMaturity, int runNumber, Policy otherBankPolicy, int iterToApplyIt)
-        {
-            string pathToSystemStates = Path.Combine(LaunchDataDir, "systemStates_m") + defaultMaturity.ToString("D2") +
-                                        bankPolicy + customerPolicy + otherBankPolicy + iterToApplyIt.ToString("D3") +
-                                        "_" + runNumber.ToString("D2");
-            var bSystem = new BankingSystem(BankNum, CustNum);
-            var systemStatesData = new List<string>();
-
-            for (var i = 0; i < iterToApplyIt; i++)
-            {
-                // Log.Info("iter=" + i);
-                bSystem.Iteration(bankPolicy, customerPolicy/*, defaultMaturity*/);
-
-                bSystem.UpdateProperties();
-                systemStatesData.Add(bSystem.GetSystemState());
-            }
-            for (var i = iterToApplyIt; i < MaxIter; i++)
-            {
-                // Log.Info("iter=" + i);
-                bSystem.Iteration(otherBankPolicy, customerPolicy/*, defaultMaturity*/);
-
-                bSystem.UpdateProperties();
-                systemStatesData.Add(bSystem.GetSystemState());
-            }
-            GC.Collect();
-            using (var writer = new StreamWriter(pathToSystemStates))
-                foreach (var line in systemStatesData)
-                    writer.WriteLine(line);
         }
     }
 }

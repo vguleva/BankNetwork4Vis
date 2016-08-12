@@ -4,7 +4,7 @@ using System.Deployment.Internal;
 
 namespace SimpleBankingModel.model
 {
-    class Bank
+    public class Bank
     {
         /// <summary>
         /// Structure: "b0".

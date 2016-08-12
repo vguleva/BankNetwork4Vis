@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using IronPython.Compiler.Ast;
 using SimpleBankingModel.classes;
 using SimpleBankingModel.interfaces;
 
@@ -32,7 +31,7 @@ namespace SimpleBankingModel.model
         /// <summary>
         /// Current iteration number
         /// </summary>
-        EventInt CurIt = new EventInt(0);// todo start it as a parameter
+        readonly EventInt _curIt = new EventInt(0);// todo start it as a parameter
         internal List<Edge> AllEdgesOverSimulation = new List<Edge>();
 
         /// <summary>
@@ -49,7 +48,7 @@ namespace SimpleBankingModel.model
 
             Banks = new List<Bank>();
             Customers = new List<Customer>();
-            CurIt.SetValue(0);
+            _curIt.SetValue(0);
             for(var i = 0; i < custNum; i++)
                 Customers.Add(new Customer(i));
             for(var i=0; i < bankNum; i++)
@@ -71,7 +70,7 @@ namespace SimpleBankingModel.model
 
             Banks = new List<Bank>();
             Customers = new List<Customer>();
-            CurIt.SetValue(0);
+            _curIt.SetValue(0);
             for (var i = 0; i < custNum; i++)
                 Customers.Add(new Customer(i));
             for (var i = 0; i < bankNum; i++)
@@ -89,7 +88,7 @@ namespace SimpleBankingModel.model
         /// </summary>
         void Initialize()
         {
-            CurIt.Incremented += delegate
+            _curIt.Incremented += delegate
             {
                 foreach (var bank in Banks)
                     bank.UpdatePreviousBalanceSheetValues();
@@ -126,17 +125,16 @@ namespace SimpleBankingModel.model
         /// </summary>
         /// <param name="bankPolicy"></param>
         /// <param name="customerPolicy"></param>
-        internal void Iteration(Policy bankPolicy, Policy customerPolicy)
+        private void Iteration(Policy bankPolicy, Policy customerPolicy)
         {
-            CurIt.Plus();// save current values of bank balance sheets to previous
+            _curIt.Plus();// save current values of bank balance sheets to previous
             NewEdgesENetwork(customerPolicy);
             NewEdgesINetwork(bankPolicy);
             DeleteExpiredEdges();
-            // todo insolvent banks action, shock propagation
-            // update files with edges over simulation and bank data
         }
 
-        internal void Iteration(Policy bankPolicy, Policy customerPolicy, Comparison<Edge> rewiringComparatorA, Comparison<Edge> rewiringComparatorL)
+        internal void Iteration(Policy bankPolicy, Policy customerPolicy, 
+              IComparer<Edge> rewiringComparatorA, IComparer<Edge> rewiringComparatorL)
         {
             Iteration(bankPolicy, customerPolicy);
             foreach (var bank in Banks)
@@ -154,10 +152,9 @@ namespace SimpleBankingModel.model
                 var size     = ChooseWeight();
                 var maturity = ChooseMaturity();
 
-                if (loanDepo.NextDouble() < LoanDepoShare)
-                    ENetwork.Add(new Edge("b" + bankNum, customer.ID, size, maturity, CurIt.ToInt()));
-                else
-                    ENetwork.Add(new Edge(customer.ID, "b" + bankNum, size, maturity, CurIt.ToInt()));
+                ENetwork.Add(loanDepo.NextDouble() < LoanDepoShare
+                    ? new Edge("b" + bankNum, customer.ID, size, maturity, _curIt.ToInt())
+                    : new Edge(customer.ID, "b" + bankNum, size, maturity, _curIt.ToInt()));
             }
         }
 
@@ -166,9 +163,7 @@ namespace SimpleBankingModel.model
             foreach (var bank in Banks)
             {
                 if (bank.NW > 0) continue;
-                //var assetRequired = bank.NW;
-                //for (var i = 0; i <= -2*assetRequired; i++)
-                while(bank.NW < 0)    // todo ?? NW<=0
+                while(bank.NW < 0)    
                 {
                     int bankNum;
                     ChooseBank(bankPolicy, bank.ID, out bankNum);
@@ -184,15 +179,15 @@ namespace SimpleBankingModel.model
 
                     var size = ChooseWeight(); // TODO size=-NW
                     var maturity = ChooseMaturity();
-                    IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, CurIt.ToInt()));
+                    IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, _curIt.ToInt()));
                 }
             }
         }
 
         private void DeleteExpiredEdges()
         {
-            ENetwork.RemoveAll(x => x.Expires == CurIt.ToInt());
-            IbNetwork.RemoveAll(x => x.Expires == CurIt.ToInt());
+            ENetwork.RemoveAll(x => x.Expires == _curIt.ToInt());
+            IbNetwork.RemoveAll(x => x.Expires == _curIt.ToInt());
         }
 
         /// <summary>
@@ -201,21 +196,23 @@ namespace SimpleBankingModel.model
         /// after which src and trg are linked according to queue.
         /// New edges take minimum expire date and minimum weight. The rest of edge weight is for the further counter-party
         /// </summary>
-        /// <param name="nodeID">The ID of a bank-node for deletion</param>
+        /// <param name="nodeId">The ID of a bank-node for deletion</param>
         /// <param name="rewiringComparatorA">The method of eliminated bank assets sorting</param>
         /// <param name="rewiringComparatorL">The method of eliminated bank liabilities sorting</param>
-        public void DeleteNode(string nodeID, Comparison<Edge> rewiringComparatorA, Comparison<Edge> rewiringComparatorL)
+        public void DeleteNode(string nodeId, IComparer<Edge> rewiringComparatorA, IComparer<Edge> rewiringComparatorL)
         {
             // form lists of assets and liabilities for an excluded bank
             var assets = new List<Edge>();
-            assets.AddRange(ENetwork.Where (x => x.Source == nodeID));
-            assets.AddRange(IbNetwork.Where(x => x.Source == nodeID));
-            ENetwork.RemoveAll(x => x.Source == nodeID); // remove cur assets and liabilities from ib- and e- networks
+            assets.AddRange(ENetwork.Where (x => x.Source == nodeId));
+            assets.AddRange(IbNetwork.Where(x => x.Source == nodeId));
+            ENetwork.RemoveAll (x => x.Source == nodeId); // remove cur assets and liabilities from ib- and e- networks
+            IbNetwork.RemoveAll(x => x.Source == nodeId);
             var liabilities = new List<Edge>();
-            liabilities.AddRange(ENetwork.Where (x=>x.Target==nodeID));
-            liabilities.AddRange(IbNetwork.Where(x=>x.Target==nodeID));
-            IbNetwork.RemoveAll(x => x.Source == nodeID); // remove cur assets and liabilities from ib- and e- networks
-            
+            liabilities.AddRange(ENetwork.Where (x=>x.Target==nodeId));
+            liabilities.AddRange(IbNetwork.Where(x=>x.Target==nodeId));
+            ENetwork.RemoveAll (x => x.Target == nodeId); // remove cur assets and liabilities from ib- and e- networks
+            IbNetwork.RemoveAll(x => x.Target == nodeId);
+
             // sort formed list according to POLICY
             assets.Sort(rewiringComparatorA);      //TODO
             liabilities.Sort(rewiringComparatorL); //TODO
@@ -226,8 +223,8 @@ namespace SimpleBankingModel.model
                 var newTarget = assets[0].Target;
                 var newWeight = Math.Min(assets[0].Weight, liabilities[0].Weight);
                 var newExpires = Math.Min(assets[0].Expires, liabilities[0].Expires);
-                var newMaturity = newExpires - CurIt.ToInt();
-                var newEdge = new Edge(newSource, newTarget, newWeight, newMaturity, CurIt.ToInt());
+                var newMaturity = newExpires - _curIt.ToInt();
+                var newEdge = new Edge(newSource, newTarget, newWeight, newMaturity, _curIt.ToInt());
                 
                 if (newSource[0] == 'b' || newTarget[0] == 'b')
                     IbNetwork.Add(newEdge);
@@ -241,19 +238,13 @@ namespace SimpleBankingModel.model
             }
         }
 
-        private void UpdatePreviousBalanceSheets()
-        {
-            foreach (var bank in Banks)
-                bank.UpdatePreviousBalanceSheetValues();
-        }
-
-        private void ChooseBank(Policy bankPolicy, string bankID, out int bankNum)
+        private void ChooseBank(Policy bankPolicy, string bankId, out int bankNum)
         {
             if(bankPolicy==Policy.R)
                 bankNum = ChooseBank();
             else if (bankPolicy == Policy.P)
                 bankNum = ChooseBank_PreferentiallyAssets();
-            else bankNum = ChooseBank_AssortativeAssets(bankID);
+            else bankNum = ChooseBank_AssortativeAssets(bankId);
         }
         
     }
