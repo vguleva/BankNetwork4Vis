@@ -61,7 +61,6 @@
     <Compile Include="classes\Network.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="classes\Network.Generators.cs" />
     <Compile Include="classes\Plotter.cs" />
     <Compile Include="interfaces\IGraph.cs" />
     <Compile Include="model\BankingSystem.Policies.cs" />

@@ -26,7 +26,7 @@ namespace SimpleBankingModel
         public const  int                 CustNum = 1000;
         public static Policy           BankPolicy = Policy.R;
         public static Policy       CustomerPolicy = Policy.R;
-        public static IGraph InitialNetworkConfig = new BarabasiAlbertGraph(BankNum, 5);
+        public static IGraph InitialNetworkConfig = new ConnectedWattsStrogatzGraph(BankNum,10,.2); //BarabasiAlbertGraph(BankNum, 5);
         public static IComparer<Edge> RewiringComparisonA = new CompareEdgesExpiresDescending();
         public static IComparer<Edge> RewiringComparisonL = new CompareEdgesExpiresDescending();
         // public Comparison<Edge> RewiringComparisonA = CompareBanksByAssets;
