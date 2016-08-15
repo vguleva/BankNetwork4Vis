@@ -19,9 +19,9 @@ namespace SimpleBankingModel.interfaces
         IEnumerable<Edge> Generate();
     }
 
-    public abstract class Graph// : IGraph
+    public abstract class NxGraph// : IGraph
     {
-        protected static readonly ILog Log = LogManager.GetLogger(typeof(Graph));
+        protected static readonly ILog Log = LogManager.GetLogger(typeof(NxGraph));
         protected static ScriptRuntime Runtime;
         protected static string PathToNetworkX;
         //protected Graph(){}
@@ -61,7 +61,16 @@ namespace SimpleBankingModel.interfaces
 
     }
 
-    class BarabasiAlbertGraph:Graph,IGraph
+    class EmptyGraph : IGraph
+    {
+        public IEnumerable<Edge> Generate()
+        {
+            return new List<Edge>();
+        }
+    }
+
+
+    class BarabasiAlbertGraph : NxGraph,IGraph
     {
         /// <summary>
         /// number of nodes in the network
@@ -94,7 +103,7 @@ namespace SimpleBankingModel.interfaces
         }
     }
     
-    class ConnectedWattsStrogatzGraph : Graph, IGraph
+    class ConnectedWattsStrogatzGraph : NxGraph, IGraph
     {
         /// <summary>
         /// The number of nodes
@@ -159,7 +168,7 @@ namespace SimpleBankingModel.interfaces
         }
     }
 
-    class ErdosRenyi : Graph, IGraph
+    class ErdosRenyi : NxGraph, IGraph
     {
         /// <summary>
         /// The number of nodes.
@@ -216,7 +225,7 @@ namespace SimpleBankingModel.interfaces
         }
     }
 
-    class PowerlawClusterGraph : Graph, IGraph
+    class PowerlawClusterGraph : NxGraph, IGraph
     {
         /// <summary>
         /// the number of nodes
@@ -265,7 +274,7 @@ namespace SimpleBankingModel.interfaces
         }
     }
     
-    class RandomPowerlawTree : Graph, IGraph
+    class RandomPowerlawTree : NxGraph, IGraph
     {
         /// <summary>
         /// The number of nodes.
@@ -323,7 +332,7 @@ namespace SimpleBankingModel.interfaces
         }
     }
 
-    class ScaleFree : Graph, IGraph
+    class ScaleFree : NxGraph, IGraph
     {
         /// <summary>
         /// Number of nodes in graph
