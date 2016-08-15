@@ -247,6 +247,11 @@ namespace SimpleBankingModel.model
             }
         }
 
+        public void InfusionFund(string nodeId, int infusionSize)
+        {
+            throw new NotImplementedException();
+        }
+
         private void ChooseBank(Policy bankPolicy, string bankId, out int bankNum)
         {
             if(bankPolicy==Policy.R)
