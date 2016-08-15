@@ -27,6 +27,7 @@ namespace SimpleBankingModel
         public static Policy           BankPolicy = Policy.R;
         public static Policy       CustomerPolicy = Policy.R;
         public static IGraph InitialNetworkConfig = new ConnectedWattsStrogatzGraph(BankNum,10,.2); //BarabasiAlbertGraph(BankNum, 5);
+        public static bool       WithNodeDeletion = true;
         public static IComparer<Edge> RewiringComparisonA = new CompareEdgesExpiresDescending();
         public static IComparer<Edge> RewiringComparisonL = new CompareEdgesExpiresDescending();
         // public Comparison<Edge> RewiringComparisonA = CompareBanksByAssets;
@@ -60,10 +61,13 @@ namespace SimpleBankingModel
             var bSystem = new BankingSystem(BankNum, CustNum, InitialNetworkConfig);// todo make a graph type be a Launch() parameter
             for (var i = 0; i < MaxIter; i++)
             {
-                bSystem.Iteration(BankPolicy, CustomerPolicy, RewiringComparisonA, RewiringComparisonL);
+                if (WithNodeDeletion)
+                    bSystem.Iteration(BankPolicy, CustomerPolicy, RewiringComparisonA, RewiringComparisonL);
+                else 
+                    bSystem.Iteration(BankPolicy, CustomerPolicy);
+                
                 bSystem.UpdateProperties(); // update time-dependent network features, save results for previous  iteration
                 OutputDataPerIter(bSystem, i); // update output files
-                bSystem.DeleteNode("b1", RewiringComparisonA, RewiringComparisonL);//TODO test
                 
             }
             GC.Collect();

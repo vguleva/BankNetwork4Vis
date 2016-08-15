@@ -4,7 +4,7 @@ using IronPython.Modules;
 
 namespace SimpleBankingModel
 {
-    public struct Edge
+    public class Edge
     {
         /// <summary>
         /// Number and type of source node

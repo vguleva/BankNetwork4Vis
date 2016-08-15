@@ -76,7 +76,12 @@ namespace SimpleBankingModel.model
             for (var i = 0; i < bankNum; i++)
                 Banks.Add(new Bank(i));
 
-            IbNetwork.AddRange(graphType.Generate());
+            var graphEdges = graphType.Generate();
+            foreach (var edge in graphEdges)
+            {
+                IbNetwork.Add(edge);
+            }
+            //IbNetwork.AddRange();
         }
 
         /// <summary>
@@ -95,6 +100,8 @@ namespace SimpleBankingModel.model
             };//UpdatePreviousBalanceSheets();}
             IbNetwork.OnAdd += delegate(Edge item)
             {
+                if (item.Source[0] != 'b' || item.Target[0]!='b')
+                    throw new Exception("Unable to add B2C-edge to IB network");
                 Banks.First(x => x.ID == item.Source).IA_Plus(item.Weight);
                 Banks.First(x => x.ID == item.Target).IL_Plus(item.Weight);
                 AllEdgesOverSimulation.Add(item);
@@ -125,7 +132,7 @@ namespace SimpleBankingModel.model
         /// </summary>
         /// <param name="bankPolicy"></param>
         /// <param name="customerPolicy"></param>
-        private void Iteration(Policy bankPolicy, Policy customerPolicy)
+        internal void Iteration(Policy bankPolicy, Policy customerPolicy)
         {
             _curIt.Plus();// save current values of bank balance sheets to previous
             NewEdgesENetwork(customerPolicy);
@@ -226,15 +233,17 @@ namespace SimpleBankingModel.model
                 var newMaturity = newExpires - _curIt.ToInt();
                 var newEdge = new Edge(newSource, newTarget, newWeight, newMaturity, _curIt.ToInt());
                 
-                if (newSource[0] == 'b' || newTarget[0] == 'b')
+                if (newSource[0] == 'b' && newTarget[0] == 'b')
                     IbNetwork.Add(newEdge);
                 else
                     ENetwork.Add(newEdge);
-                assets[0].SetWeight(assets[0].Weight - newWeight);
-                liabilities[0].SetWeight(assets[0].Weight - newWeight);
+                assets[0].Weight=assets[0].Weight - newWeight;
+                liabilities[0].Weight=liabilities[0].Weight - newWeight;
 
-                if (assets[0].Weight == 0)      assets.RemoveAt(0);
-                if (liabilities[0].Weight == 0) liabilities.RemoveAt(0);
+                if (assets[0].Weight == 0)      
+                    assets.RemoveAt(0);
+                if (liabilities[0].Weight == 0) 
+                    liabilities.RemoveAt(0);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -18,6 +19,15 @@ namespace SimpleBankingModel.classes
         {
             OnAdd(item);
             base.Add(item);
+        }
+
+        public new void AddRange(List<T> itemList) //TODO see RemoveAll
+        {
+            foreach (var item in itemList)
+            {
+                OnAdd(item);
+                base.Add(item);
+            }
         }
 
         public new void Remove(T item)
