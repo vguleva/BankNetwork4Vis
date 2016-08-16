@@ -169,8 +169,9 @@ namespace SimpleBankingModel.model
         {
             foreach (var bank in Banks)
             {
-                if (bank.NW > 0) continue;
-                while(bank.NW < 0)    
+                if (bank.NW > 0) 
+                    continue;
+                while(bank.NW <= 0)    
                 {
                     int bankNum;
                     ChooseBank(bankPolicy, bank.ID, out bankNum);
@@ -256,8 +257,10 @@ namespace SimpleBankingModel.model
         {
             if(bankPolicy==Policy.R)
                 bankNum = ChooseBank();
-            else if (bankPolicy == Policy.P)
-                bankNum = ChooseBank_PreferentiallyAssets();
+            else if (bankPolicy == Policy.Pa)
+                bankNum = ChooseBank_PreferentiallyAssets(bankId);
+            else if (bankPolicy == Policy.Pnw)
+                bankNum = ChooseBank_PreferentiallyNW(bankId);
             else bankNum = ChooseBank_AssortativeAssets(bankId);
         }
         

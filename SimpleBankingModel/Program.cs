@@ -14,8 +14,10 @@ namespace SimpleBankingModel
     {
         [Description("r")]
         R/*andom*/,
-        [Description("p")]
-        P/*referential*/,
+        [Description("pa")]
+        Pa/*referential*/,
+        [Description("pnw")]
+        Pnw,
         [Description("a")]
         A/*ssortative*/
     }

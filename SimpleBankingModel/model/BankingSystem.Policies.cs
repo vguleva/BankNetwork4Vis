@@ -20,21 +20,22 @@ namespace SimpleBankingModel.model
             return tarBank;
              */
         }
+
         /// <summary>
         /// Split segment [0:1] in accordance to assets, 
         /// so probability of choing 'i' is proportional to A_i/A
         /// </summary>
-        /// <param name="random">Double in [0:1]</param>
+        /// <param name="curBank">The id of a bank we are choosing a partner for</param>
         /// <returns>index of bank, -1 if random wasn't in range</returns>
-        internal int ChooseBank_PreferentiallyAssets()
+        internal int ChooseBank_PreferentiallyAssets(string curBank)
         {
             var random = ForBankChoose.NextDouble();
-            if (random < 0 || random > 1) throw new Exception("ChooseBankPreferentiallyAssets: input value is oput of range");
+            if (random < 0 || random > 1) throw new Exception("ChooseBankPreferentiallyAssets: input random is out of range");
             var ratingArray = new double[Banks.Count];
-            var allBanksAssets = Banks.Sum(x => x.GetA());
+            var allBanksAssets = Banks.Where(x=>x.ID != curBank).Sum(x => x.GetA());
             if (!(allBanksAssets > 0)) return ChooseBank();
             foreach (var bank in Banks)
-                ratingArray[Int32.Parse(bank.ID.Substring(1))] = (double)bank.GetA() / allBanksAssets;
+                ratingArray[Int32.Parse(bank.ID.Substring(1))] = bank.ID != curBank ? (double)bank.GetA() / allBanksAssets : 0;
             var rightBound = ratingArray[0];
             for (var i = 0; i < ratingArray.Length; i++)
                 if (random < rightBound)
@@ -59,6 +60,23 @@ namespace SimpleBankingModel.model
                 minIndex = bank.ID;
             }
             return Int32.Parse(minIndex.Substring(1));
+        }
+
+        internal int ChooseBank_PreferentiallyNW(string curBank)
+        {
+            var random = ForBankChoose.NextDouble();
+            if (random < 0 || random > 1) throw new Exception("ChooseBankPreferentiallyNWs: input random is out of range");
+            var ratingArray = new double[Banks.Count];
+            var allBanksNWs = Banks.Where(x=>x.NW>0 && x.ID != curBank).Sum(x => x.NW);
+            if (!(allBanksNWs > 0)) return ChooseBank();
+            foreach (var bank in Banks)
+                ratingArray[Int32.Parse(bank.ID.Substring(1))] = (double)bank.NW>0 && bank.ID != curBank ? (double)bank.NW / allBanksNWs : 0;
+            var rightBound = ratingArray[0];
+            for (var i = 0; i < ratingArray.Length; i++)
+                if (random < rightBound)
+                    return i;
+                else if (i + 1 < ratingArray.Length) rightBound += ratingArray[i + 1];
+            return -1;
         }
 
         int ChooseWeight()
