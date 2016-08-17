@@ -61,8 +61,9 @@ namespace SimpleBankingModel
         static void Launch(int runNumber)//, int bankNum, int custNum, IGraph graphType, Comparison<Edge> rewiringPolicyA, Comparison<Edge> rewiringPolicyL )
         {
             var bSystem = new BankingSystem(BankNum, CustNum, InitialNetworkConfig);// todo make a graph type be a Launch() parameter
-            for (var i = 0; i < MaxIter; i++)
+            for (var i = 0; i < MaxIter && bSystem.Banks.Count > 2; i++)
             {
+                Log.Info("T="+i+"; bank-nodes="+(BankNum-bSystem.DeletedNodeIDs.Count));
                 if (WithNodeDeletion)
                     bSystem.Iteration(BankPolicy, CustomerPolicy, RewiringComparisonA, RewiringComparisonL);
                 else 

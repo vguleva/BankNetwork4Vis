@@ -27,6 +27,7 @@ namespace SimpleBankingModel.model
         /// One of vertexes is customer
         /// </summary>
         internal EventList<Edge> ENetwork = new EventList<Edge>();
+        public List<string> DeletedNodeIDs = new List<string>();
 
         /// <summary>
         /// Current iteration number
@@ -135,9 +136,9 @@ namespace SimpleBankingModel.model
         internal void Iteration(Policy bankPolicy, Policy customerPolicy)
         {
             _curIt.Plus();// save current values of bank balance sheets to previous
+            DeleteExpiredEdges();
             NewEdgesENetwork(customerPolicy);
             NewEdgesINetwork(bankPolicy);
-            DeleteExpiredEdges();
         }
 
         internal void Iteration(Policy bankPolicy, Policy customerPolicy, 
@@ -148,6 +149,7 @@ namespace SimpleBankingModel.model
             {
                 if (bank.NW < 0) DeleteNode(bank.ID, rewiringComparatorA, rewiringComparatorL);
             }
+            Banks.RemoveAll(x => DeletedNodeIDs.Contains(x.ID));
         }
 
         private void NewEdgesENetwork(Policy customerPolicy)
@@ -155,13 +157,13 @@ namespace SimpleBankingModel.model
             var loanDepo = new Random();
             foreach (var customer in Customers)
             {
-                int bankNum ; ChooseBank(customerPolicy," ",out bankNum);
+                string bankNum ; ChooseBank(customerPolicy," ",out bankNum);
                 var size     = ChooseWeight();
                 var maturity = ChooseMaturity();
 
                 ENetwork.Add(loanDepo.NextDouble() < LoanDepoShare
-                    ? new Edge("b" + bankNum, customer.ID, size, maturity, _curIt.ToInt())
-                    : new Edge(customer.ID, "b" + bankNum, size, maturity, _curIt.ToInt()));
+                    ? new Edge(bankNum, customer.ID, size, maturity, _curIt.ToInt())
+                    : new Edge(customer.ID, bankNum, size, maturity, _curIt.ToInt()));
             }
         }
 
@@ -173,10 +175,10 @@ namespace SimpleBankingModel.model
                     continue;
                 while(bank.NW <= 0)    
                 {
-                    int bankNum;
+                    string bankNum;
                     ChooseBank(bankPolicy, bank.ID, out bankNum);
                     var cnt = 0;
-                    while ("b" + bankNum == bank.ID)
+                    while (bankNum == bank.ID && Banks.Count > 2)
                         if (cnt < 4)
                         {
                             ChooseBank(bankPolicy, bank.ID, out bankNum);
@@ -187,7 +189,9 @@ namespace SimpleBankingModel.model
 
                     var size = ChooseWeight(); // TODO size=-NW
                     var maturity = ChooseMaturity();
-                    IbNetwork.Add(new Edge(bank.ID, "b" + bankNum, size, maturity, _curIt.ToInt()));
+                    if (DeletedNodeIDs.Contains(bankNum))
+                        throw new Exception("the node chosen have already been deleted");
+                    IbNetwork.Add(new Edge(bank.ID, bankNum, size, maturity, _curIt.ToInt()));
                 }
             }
         }
@@ -209,6 +213,11 @@ namespace SimpleBankingModel.model
         /// <param name="rewiringComparatorL">The method of eliminated bank liabilities sorting</param>
         public void DeleteNode(string nodeId, IComparer<Edge> rewiringComparatorA, IComparer<Edge> rewiringComparatorL)
         {
+            if (DeletedNodeIDs.Contains(nodeId)) throw new Exception("This node is already deleted!");
+            DeletedNodeIDs.Add(nodeId);
+            // remove self loops
+            IbNetwork.RemoveAll(x=>x.Source==x.Target);
+            
             // form lists of assets and liabilities for an excluded bank
             var assets = new List<Edge>();
             assets.AddRange(ENetwork.Where (x => x.Source == nodeId));
@@ -229,6 +238,7 @@ namespace SimpleBankingModel.model
             {
                 var newSource = liabilities[0].Source;
                 var newTarget = assets[0].Target;
+                if (DeletedNodeIDs.Contains(newSource) || DeletedNodeIDs.Contains(newTarget)) throw new Exception();
                 var newWeight = Math.Min(assets[0].Weight, liabilities[0].Weight);
                 var newExpires = Math.Min(assets[0].Expires, liabilities[0].Expires);
                 var newMaturity = newExpires - _curIt.ToInt();
@@ -252,8 +262,13 @@ namespace SimpleBankingModel.model
         {
             throw new NotImplementedException();
         }
-
-        private void ChooseBank(Policy bankPolicy, string bankId, out int bankNum)
+        /// <summary>
+        /// returns int of bank id
+        /// </summary>
+        /// <param name="bankPolicy">The algorithm of partner choice</param>
+        /// <param name="bankId">Bank finding a partner</param>
+        /// <param name="bankNum">The partner's ID(string) </param>
+        private void ChooseBank(Policy bankPolicy, string bankId, out string bankNum)
         {
             if(bankPolicy==Policy.R)
                 bankNum = ChooseBank();
@@ -262,6 +277,8 @@ namespace SimpleBankingModel.model
             else if (bankPolicy == Policy.Pnw)
                 bankNum = ChooseBank_PreferentiallyNW(bankId);
             else bankNum = ChooseBank_AssortativeAssets(bankId);
+            if(DeletedNodeIDs.Contains(bankNum)) 
+                throw new Exception("The bank choosen has been deleted from the network");
         }
         
     }
