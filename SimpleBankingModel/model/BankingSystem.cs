@@ -173,25 +173,20 @@ namespace SimpleBankingModel.model
             {
                 if (bank.NW > 0) 
                     continue;
-                while(bank.NW <= 0)    
+                var tries = 0; // number of tries for state enhancing
+                while(bank.NW <= 0 && tries < Banks.Count)    
                 {
                     string bankNum;
                     ChooseBank(bankPolicy, bank.ID, out bankNum);
-                    var cnt = 0;
-                    while (bankNum == bank.ID && Banks.Count > 2)
-                        if (cnt < 4)
-                        {
-                            ChooseBank(bankPolicy, bank.ID, out bankNum);
-                            cnt++;
-                        }
-                        else ChooseBank(Policy.R, bank.ID, out bankNum);
-
-
-                    var size = ChooseWeight(); // TODO size=-NW
+                    // TODO check if (bankNum == bank.ID) may be false
+                    
+                    var size = Math.Min(-bank.NW+1, Banks.First(x=>x.ID==bankNum).NW-1);//ChooseWeight(); // TODO size=-NW
                     var maturity = ChooseMaturity();
                     if (DeletedNodeIDs.Contains(bankNum))
                         throw new Exception("the node chosen have already been deleted");
-                    IbNetwork.Add(new Edge(bank.ID, bankNum, size, maturity, _curIt.ToInt()));
+                    if (size >0 && maturity > 0)
+                        IbNetwork.Add(new Edge(bank.ID, bankNum, size, maturity, _curIt.ToInt()));
+                    tries++;
                 }
             }
         }

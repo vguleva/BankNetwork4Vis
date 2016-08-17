@@ -10,6 +10,11 @@ namespace SimpleBankingModel.model
     partial class BankingSystem
     {
         private static readonly Random ForBankChoose = new Random();
+        private static readonly Random ForWeightChoose = new Random();
+
+        private const int mean = 10;
+        private const int dev = 2;
+
         /// <summary>
         /// Returns the int of bank id.
         /// Bank must exist in the network
@@ -101,9 +106,16 @@ namespace SimpleBankingModel.model
             return "";
         }
 
-        int ChooseWeight()
+        int ChooseWeight(/*int mean, int dev*/)
         {
-            return EdgeWeight;
+            //Random rand = new Random(); //reuse this if you are generating many
+            double u1 = ForWeightChoose.NextDouble(); //these are uniform(0,1) random doubles
+            double u2 = ForWeightChoose.NextDouble();
+            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
+                         Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
+            var randNormal = (int) Math.Round(mean + dev * randStdNormal); //random normal(mean,stdDev^2)
+            
+            return Math.Abs(randNormal);// EdgeWeight;
         }
         int ChooseMaturity()
         {
