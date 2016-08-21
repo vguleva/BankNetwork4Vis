@@ -27,13 +27,36 @@ namespace SimpleBankingModel.model
         /// One of vertexes is customer
         /// </summary>
         internal EventList<Edge> ENetwork = new EventList<Edge>();
-        public List<string> DeletedNodeIDs = new List<string>();
-
+        
         /// <summary>
         /// Current iteration number
         /// </summary>
         readonly EventInt _curIt = new EventInt(0);// todo start it as a parameter
         internal List<Edge> AllEdgesOverSimulation = new List<Edge>();
+        public List<string> DeletedNodeIDs = new List<string>();
+
+        #region FEATURES FOR PLOTS
+        /// <summary>
+        /// Count of deleted nodes or nodes with NW<0
+        /// </summary>
+        public List<double> NegativeNodesShare = new List<double>();
+        /// <summary>
+        /// Considers an interbank network.
+        /// May be more than current N, since multiedges.
+        /// Is proportional to edges count, but normalized by the number of nodes.
+        /// </summary>
+        public List<double> AverageDegree = new List<double>();
+        /// <summary>
+        /// Returns Average clustering coefficients for each iteration.
+        /// Is evaluated with NetworkX
+        /// </summary>
+        public List<double> AverageClustering = new List<double>();
+        /// <summary>
+        /// The list of path length for iterations.
+        /// Evaluated with NetworkX.
+        /// </summary>
+        public List<double> AverageShortestPath = new List<double>();
+        #endregion
 
         /// <summary>
         /// Set number of current iteration to ZERO, 

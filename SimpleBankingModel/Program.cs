@@ -70,7 +70,8 @@ namespace SimpleBankingModel
                     bSystem.Iteration(BankPolicy, CustomerPolicy);
                 
                 bSystem.UpdateProperties(); // update time-dependent network features, save results for previous  iteration
-                OutputDataPerIter(bSystem, i); // update output files
+                bSystem.CommitSysState(); // write topologycal features for the current iteration to the corresponding fields
+                // OutputDataPerIter(bSystem, i); // update output files
                 
             }
             GC.Collect();
